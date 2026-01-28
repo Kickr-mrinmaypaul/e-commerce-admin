@@ -30,6 +30,8 @@ export default function Login() {
             // })
             const response = await LoginServices.login(data);
             if(response?.status){
+                localStorage.setItem("authToken", response?.data?.token);
+                console.log("token", response?.data?.token)
                 router.push("/");
             }
             console.log("Login resp:", response)

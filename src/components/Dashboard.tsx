@@ -1,17 +1,54 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CiSearch } from "react-icons/ci";
 import { HiDotsVertical } from "react-icons/hi";
 import DetailsButton from '@/components/button/DetailsButton';
 import SimpleAreaChart from './SimpleAreaChart';
 import Link from 'next/link';
 import FilterButton from './button/FilterButton';
+import Button from './button/Button';
+import OrderManagementServices from '@/services/OrderManagementServices';
 
 
 
 export default function Dashboard() {
     const [isActive, setIsActive] = useState("This week");
+    const [transactionData, setTransactionData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+
+    const fetchTransaction = async()=>{
+        try {
+            setLoading(true);
+            const response = await OrderManagementServices.getAllOrders();
+            const transactions = response?.data?.transactions || [];
+            console.log("Dahboard transaction data:", response);
+            setTransactionData(transactions.slice(0, 4));
+        } catch (error) {
+            console.error(error);
+        }finally{
+            setLoading(false);
+        }
+    }
+
+    useEffect(()=>{
+        fetchTransaction();
+    },[])
+
+    const formatStatus = (status?: string) => {
+      if (!status) return "";
+      return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+    };
+
+    const formatDate = (date?: string) => {
+      if (!date) return "";
+      return new Date(date).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    };
 
     const progressDiv = [
         {id: 1, title: "Total Sales", days: "Last 7 days"},
@@ -86,9 +123,9 @@ const bestSellingProductLebel = [
 ]
 
 const bestSellingData = [
-    {id: 1, imgUrl: "/globe.svg", totalOrder: "101", status: "Pending", price: "12000"},
+    {id: 1, imgUrl: "/globe.svg", totalOrder: "101", status: "Stock", price: "12000"},
     {id: 2, imgUrl: "/globe.svg", totalOrder: "189", status: "Out of Stock", price: "12000"},
-    {id: 3, imgUrl: "/globe.svg", totalOrder: "111", status: "pending", price: "12000"},
+    {id: 3, imgUrl: "/globe.svg", totalOrder: "111", status: "Stock", price: "12000"},
     {id: 4, imgUrl: "/globe.svg", totalOrder: "131", status: "Stock", price: "12000"},
 ]
 
@@ -194,12 +231,14 @@ const bestSellingData = [
                         <span className='text-[14px] font-bold text[#23272E]'>Transaction</span>
                         <FilterButton title='Filter'/>
                     </div>
-                    <div className='w-full '>
+                    <div className='w-full'>
                         <table className='w-full border-separate border-spacing-y-3'>
                             <thead>
                                 <tr className='text-start'>
                                     {transactionLabel.map((item)=>(
-                                        <th key={item.id}>
+                                        <th 
+                                        className='text-start pl-[11px]'
+                                        key={item.id}>
                                             {item.title}
                                         </th>
                                     ))}
@@ -207,14 +246,15 @@ const bestSellingData = [
                             </thead>
                             <tbody className='w-full'>
                                 
-                                {ordersData.map((item)=>(
-                                    <tr 
-                                    key={item.id}>
-                                        <td>{item.id}</td>
-                                        <td>{item.customer}</td>
-                                        <td>{item.orderDate}</td>
-                                        <td>{item.status}</td>
-                                        <td>{item.amount}</td>
+                                {transactionData.map((item)=>(
+                                    <tr
+                                    className='text-[13px] font-medium text-[#000000]' 
+                                    key={item._id}>
+                                        <td className='py-0.5 pl-[11px]'>{item._id}</td>
+                                        <td className='py-0.5 pl-[11px]'>{item.user}</td>
+                                        <td className='py-0.5 pl-[11px]'>{formatDate(item?.createdAt)}</td>
+                                        <td className='py-0.5 pl-[11px]'>{formatStatus(item?.orderStatus)}</td>
+                                        <td className='py-0.5 pl-[11px]'>₹{item?.totalAmount}</td>
                                     </tr>
                                 ))}
                                 
@@ -263,23 +303,23 @@ const bestSellingData = [
 
              {/*Best selling products*/}           
         <section className='flex-1 p-4'>
-            <div className='w-full flex flex-row'>
+            <div className='w-full flex flex-row gap-[52px]'>
                 <div className='w-[65%] bg-[#ffffff] pl-[15px] '>
                     <div className='w-full flex flex-row items-center justify-between pt-[8px] pr-[9px]'>
                         <span className='text-[14px] font-bold text[#23272E]'>Best Selling Products</span>
                         <FilterButton title='Filter'/>
                     </div>
                     <div className='w-full mt-[16px]'>
-                        <table className='w-full'>
-                            <thead>
-                                <tr className='bg-[#EAF8E7] text-[11px] text-[#6A717F] h-[28.41px] p-[9.34px]  rounded-md'>
+                        <table className='w-full border-collapse'>
+                            <thead >
+                                <tr className='bg-[#EAF8E7] items-start text-[11px] text-[#6A717F] h-[28.41px] rounded-sm'>
                                     {bestSellingProductLebel.map((item)=>(
-                                        <td
-                                        className='mx-[11px] '
+                                        <th
+                                        className='text-start pl-[9px] '
                                         key={item.id}
                                         >
                                             {item.title}
-                                        </td>
+                                        </th>
                                     ))}
                                 </tr>
                             </thead>
@@ -287,23 +327,75 @@ const bestSellingData = [
                                 
                                 {bestSellingData.map((item)=>(
                                     <tr key={item.id}>
-                                        <td>
+                                        <td className="px-3 py-4">
                                             <img
                                             className='w-[52px] h-[67px] object-contain' 
                                             src={item.imgUrl} alt={item.imgUrl} />
                                         </td>
                                         <td>{item.totalOrder}</td>
-                                        <td>{item.status}</td>
+                                        <td
+                                        className={item.status === "Stock" ? "text-green-500" : "text-red-500"}
+                                        ><li>{item.status}</li></td>
                                         <td>{item.price}</td>
                                     </tr>
                                 ))}
                                 
                             </tbody>
+                            
                         </table>
+                        <div
+                        className='w-full flex justify-end pr-[34px]'
+                        >
+                            <DetailsButton title='Details'/>
+                        </div>
                     </div>
                 </div>
-                <div>
-
+                <div className='w-[30%] bg-[#ffffff] p-4 rounded-sm shadow-md'>
+                    <div className='flex flex-col'>
+                        <div className='flex flex-row justify-between items-center'>
+                            <h2 className='text-[15px] text-[#000000] font-bold'>Add New Product</h2>
+                            <button className='text-[10px] font-medium text-[#003BFF]'>Add New</button>
+                        </div>
+                        <span className='text-[10px] text-[#6A717F] '>Categories</span>
+                    </div>
+                    <div className='flex flex-col mt-[30px]'>
+                        {topProducts.map((item)=>(
+                            <div
+                            className='flex flex-row space-x-2 mb-2 items-center shadow-sm pl-1 py-1'
+                            key={item.id}
+                            >
+                                <img 
+                                className='w-[22px] h-[28px] object-contain'
+                                src={item.imgurl} alt={item.title} />
+                                <span className='text-[10px] text-[#000000]'>{item.title}</span>
+                            </div>
+                        ))}        
+                    </div>
+                    <span className='flex items-center justify-center text-[12px] text-[#6467F2] font-medium cursor-pointer'>See more</span>
+                    <div className='mt-[23px]'>
+                        <span className='text-[10px] text-[#6A717F] font-medium'>Product</span>
+                        <div>
+                            {topProducts.map((item)=>(
+                            <div
+                            className='flex flex-row space-x-2 mb-2 items-center shadow-sm pl-1 py-1'
+                            key={item.id}
+                            >
+                                <img 
+                                className='w-[22px] h-[28px] object-contain'
+                                src={item.imgurl} alt={item.title} />
+                                <div className='flex flex-col'>
+                                    <span className='text-[12px] text-[#000000]'>{item.title}</span>
+                                    <span className='text-[10px] font-bold text-[#003BFF]'>{item.amount}</span>
+                                </div>
+                                <Button 
+                                className='ml-auto'
+                                icon={"/icon/circle-plus.png"}
+                                title='Add'/>
+                            </div>
+                        ))} 
+                        </div>
+                        <span className='flex items-center justify-center text-[12px] text-[#6467F2] font-medium cursor-pointer'>See more</span>
+                    </div>
                 </div>
             </div>
         </section>

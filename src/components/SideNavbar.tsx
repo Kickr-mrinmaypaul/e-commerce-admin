@@ -4,10 +4,45 @@ import React, { useState } from 'react'
 import Dashboard from '@/components/Dashboard';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
+import OrderManagement from './OrderManagement';
+import Transaction from './Transaction';
+import CustomerManagement from './CustomerManagement';
+import AddProduct from './AddProduct';
+import Categories from './Categories';
 
 export default function SideNavbar() {
     const [isActive , setIsActive] = useState("Dashboard");
     const router = useRouter();
+
+
+    const renderComponent = () => {
+    switch (isActive) {
+        case "Dashboard":
+        return <Dashboard />;
+
+        case "Order Management":
+        return <OrderManagement />;
+
+        case "Customers":
+        return <CustomerManagement/>;
+
+        case "Categories":
+        return <Categories/>;
+
+        case "Transactions":
+        return <Transaction/>;
+
+        case "Add Products":
+        return <AddProduct/>;
+
+        case "Product List":
+        return <div>Product List Page</div>;
+
+        default:
+        return <Dashboard />;
+    }
+    };
+
 
     const sideMenuButton = [
         {id: 1 , name: "Dashboard", icon: "/icon/dashboard_icon.png", route: "/"},
@@ -25,8 +60,8 @@ export default function SideNavbar() {
 
   return (
 <div className='flex flex-row min-h-screen'>
-    <aside className='w-[158px] bg-[#ffffff] border-r border-[#0000001F]'>
-        <nav className='w-full flex flex-col'>
+    <aside className='w-[165px] bg-[#ffffff] border-r border-[#0000001F]'>
+        <nav className='w-full flex flex-col pr-[4px]'>
             <div className='w-[121.45px] h-[41.68px] mt-[6.31px] ml-[5.25px] p-[9.34px] items-center'>
                 <h1 
                 style={{ fontFamily: "Glitten", textTransform: "uppercase" }} 
@@ -87,7 +122,7 @@ export default function SideNavbar() {
     </aside>
     <div className='flex-1 min-w-0'>
         <Navbar title={isActive}/>
-        <Dashboard/>
+        {renderComponent()}
     </div>
 </div>
   )
