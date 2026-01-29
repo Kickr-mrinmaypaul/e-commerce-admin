@@ -11,13 +11,17 @@ export default function OrderManagement() {
   const [allOrders, setAllOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const totalPages = 4;
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchAllOrders = async()=>{
+
+  const fetchAllOrders = async(currentPage = 1)=>{
     try {
       setLoading(true);
-      const response = await OrderManagementServices.getAllOrders();
+      const response = await OrderManagementServices.getAllOrders(currentPage);
       setAllOrders(response?.data?.transactions);
+      setTotalPages(response?.data?.totalPage);
+      setPage(response?.data?.page);
+
       console.log("Get All Orders resp:", response);
     } catch (error) {
       console.error(error);
@@ -27,8 +31,8 @@ export default function OrderManagement() {
   }
 
     useEffect(()=>{
-      fetchAllOrders();
-    },[])
+      fetchAllOrders(page);
+    },[page])
 
       const formatStatus = (status?: string) => {
       if (!status) return "";
@@ -139,8 +143,8 @@ export default function OrderManagement() {
         </table>
         <div className='w-full flex  justify-center items-center'>
             <PaginationBtn
-            page={1}
-            totalPages={4}
+            page={page}
+            totalPages={totalPages}
             onPrev={() => setPage(prev => Math.max(prev - 1, 1))}
             onNext={() => setPage(prev => Math.min(prev + 1, totalPages))}
           />

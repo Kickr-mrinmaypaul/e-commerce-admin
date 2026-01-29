@@ -1,24 +1,24 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import OrderManagementServices from '@/services/OrderManagementServices';
 import { Loader2 } from 'lucide-react';
 import PaginationBtn from './button/PaginationBtn';
+import CustomerServices from '@/services/CustomerServices';
 
 
 export default function CustomerManagement() {
-  const [isActive, setIsActive] = useState("All Order");
-  const [allOrders, setAllOrders] = useState<any[]>([]);
+  const [isActive, setIsActive] = useState("Total Costumers");
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const totalPages = 4;
 
-  const fetchAllOrders = async()=>{
+  const fetchAllUsers = async()=>{
     try {
       setLoading(true);
-      const response = await OrderManagementServices.getAllOrders();
-      setAllOrders(response?.data?.transactions);
-      console.log("Get All Orders resp:", response);
+      const response = await CustomerServices.getAllUsers();
+      setAllUsers(response?.data?.data);
+      console.log("Get All Users resp:", response);
     } catch (error) {
       console.error(error);
     }finally{
@@ -27,7 +27,7 @@ export default function CustomerManagement() {
   }
 
     useEffect(()=>{
-      fetchAllOrders();
+      fetchAllUsers();
     },[])
 
       const formatStatus = (status?: string) => {
@@ -45,11 +45,11 @@ export default function CustomerManagement() {
     };
 
     const orders = [
-  { "id": 1, "label": "Costumers " },
+  { "id": 1, "label": "CUSTOMERS " },
   { "id": 2, "label": "ORDERS" },
-  { "id": 3, "label": "total Spent" },
-  { "id": 4, "label": "Status" },
-  { "id": 5, "label": "Joined" },
+  { "id": 3, "label": "TOTAL SPENT" },
+  { "id": 4, "label": "STATUS" },
+  { "id": 5, "label": "JOINED" },
 ]
 
   const DataLabel = [
@@ -59,23 +59,7 @@ export default function CustomerManagement() {
     { "id": 4, "label": "Avg Order Value" , "data": "50000"},
   ]
 
-    //   const DataLabel = [
-    //   { id: 1, label: "All Orders", key: "all" },
-    //   { id: 2, label: "Pending", key: "pending" },
-    //   { id: 3, label: "Processing", key: "processing" },
-    //   { id: 4, label: "Shipped", key: "shipped" },
-    //   { id: 5, label: "Completed", key: "completed" },
-    // ];
-
-    // const ordersData = allOrders?.data?.transactions || [];
-
-    // const orderStats = {
-    //   all: ordersData.length,
-    //   pending: ordersData.filter(o => o.orderStatus.toLowerCase() === "pending").length,
-    //   processing: ordersData.filter(o => o.orderStatus.toLowerCase() === "processing").length,
-    //   shipped: ordersData.filter(o => o.orderStatus.toLowerCase() === "shipped").length,
-    //   completed: ordersData.filter(o => o.orderStatus.toLowerCase() === "completed").length,
-    // };
+  
 
   if(loading){
     return(
@@ -120,16 +104,33 @@ export default function CustomerManagement() {
             </tr>
           </thead>
           <tbody>
-            {allOrders.map((order)=>(
+            {allUsers.map((user)=>(
               <tr
               className='text-[13px] font-medium text-[#000000] '
-              key={order?._id}
+              key={user?._id}
               >
-                <td className='py-1 pl-[11px]'>{order?.orderId}</td>
-                <td className='py-1 pl-[11px]'>{order?.user}</td>
-                <td className='py-1 pl-[11px]'>₹{order?.totalAmount}</td>
-                <td className='py-1 pl-[11px]'>{formatStatus(order?.orderStatus)}</td>
-                <td className='py-1 pl-[11px]'>{formatDate(order?.createdAt)}</td>
+                <td className='py-1 pl-[11px]'>
+                  <div className='flex flex-col gap-1'>
+                    <span>{user?.name}</span>
+                    <span>{user?.email}</span>
+                  </div>
+                  
+                </td>
+                <td className='py-1 pl-[11px]'>{user?.user}</td>
+                <td className='py-1 pl-[11px]'>₹{user?.totalAmount}</td>
+                <td className='py-1 pl-[11px]'>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`h-1 w-1 rounded-full ${
+                        user?.isActive ? "bg-green-500" : "bg-red-400"
+                      }`}
+                    ></span>
+                    <span>
+                      {user?.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                </td>
+                <td className='py-1 pl-[11px]'>{formatDate(user?.createdAt)}</td>
               </tr>
             ))}
           </tbody>

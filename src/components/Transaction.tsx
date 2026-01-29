@@ -3,17 +3,22 @@
 import React, { useEffect, useState } from 'react'
 import OrderManagementServices from '@/services/OrderManagementServices';
 import { Loader2 } from 'lucide-react';
+import PaginationBtn from './button/PaginationBtn';
 
 export default function Transaction() {
   const [isActive, setIsActive] = useState("All Order");
   const [allOrders, setAllOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchAllOrders = async()=>{
+  const fetchAllOrders = async(currentPage = 1)=>{
     try {
       setLoading(true);
-      const response = await OrderManagementServices.getAllOrders();
+      const response = await OrderManagementServices.getAllOrders(currentPage);
       setAllOrders(response?.data?.transactions);
+      setTotalPages(response?.data?.totalPage);
+      setPage(response?.data?.page);
       console.log("Get All Orders resp:", response);
     } catch (error) {
       console.error(error);
@@ -22,9 +27,10 @@ export default function Transaction() {
     }
   }
 
+    
     useEffect(()=>{
-      fetchAllOrders();
-    },[])
+      fetchAllOrders(page);
+    },[page])
 
       const formatStatus = (status?: string) => {
       if (!status) return "";
@@ -94,6 +100,14 @@ export default function Transaction() {
             ))}
           </tbody>
         </table>
+        <div className='w-full flex  justify-center items-center'>
+            <PaginationBtn
+            page={page}
+            totalPages={totalPages}
+            onPrev={() => setPage(prev => Math.max(prev - 1, 1))}
+            onNext={() => setPage(prev => Math.min(prev + 1, totalPages))}
+          />
+        </div>
       </div>
     </div>
   )

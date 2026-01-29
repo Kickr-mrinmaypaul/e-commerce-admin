@@ -11,11 +11,21 @@ import Button from './button/Button';
 import OrderManagementServices from '@/services/OrderManagementServices';
 
 
+type DashboardStats = {
+  totalSales: number;
+  totalOrders: number;
+  pendingCancel: number;
+};
+
 
 export default function Dashboard() {
     const [isActive, setIsActive] = useState("This week");
     const [transactionData, setTransactionData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [loadingToalSales, setLoadingTotalSales] = useState(false);
+    const [stats, setStats] = useState<DashboardStats>({totalSales: 0, totalOrders: 0,pendingCancel: 0,})
+    const [loadingBestSelling, setLoadingBestSelling] = useState(false);
+    const [bestSelling, setBestSelling] = useState([])
 
 
     const fetchTransaction = async()=>{
@@ -36,6 +46,43 @@ export default function Dashboard() {
         fetchTransaction();
     },[])
 
+    // const fetchDahboardData = async()=>{
+    //     try {
+    //         setLoadingTotalSales(true);
+    //         const [salesRes, orderRes] = await Promise.all([
+    //             OrderManagementServices.toatlSales(),
+
+    //         ])
+            
+    //     } catch (error) {
+    //         console.error(error);
+    //     }finally{
+    //         setLoadingTotalSales(false);
+    //     }
+    // }
+
+    // useEffect(()=>{
+    //     fetchDahboardData();
+    // },[])
+
+    const fetchBestSellingProducts = async()=>{
+        try {
+            setLoadingBestSelling(true);
+            const response = await OrderManagementServices.bestSellingProducts();
+            console.log("Best Selling products:", response);
+            const data = response?.data?.data || []
+            setBestSelling(data.slice(0,4))
+        } catch (error) {
+            console.error(error);
+        }finally{
+            setLoadingBestSelling(false);
+        }
+    }
+
+    useEffect(()=>{
+        fetchBestSellingProducts();
+    },[])
+
     const formatStatus = (status?: string) => {
       if (!status) return "";
       return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
@@ -49,6 +96,7 @@ export default function Dashboard() {
         year: "numeric",
       });
     };
+
 
     const progressDiv = [
         {id: 1, title: "Total Sales", days: "Last 7 days"},
@@ -148,7 +196,7 @@ const bestSellingData = [
                         </div>
                         <div>
                             <div>
-                                <span className='text-[16px] text-[#023337] font-bold'>15000</span>
+                                <span className='text-[16px] text-[#023337] font-bold'>50000</span>
                                 <p className='text-[10px] text-[#6A717F]'>Previous 7 days</p>
                             </div>
                         </div>
@@ -202,19 +250,20 @@ const bestSellingData = [
                         type="text" />
                     </div>
                     <div className='flex flex-col mt-[7.47px]'>
-                        {topProducts.map((item)=>(
+                        {bestSelling.map((item)=>(
                             <div
                             className='flex flex-row items-center justify-between'
-                            key={item.id}
+                            key={item?.productId}
                             >
                                 <div className='w-[135px] h-[53.74px] flex flex-row items-center border-b border-[#D1D1D1]'>
                                     <img 
                                     className='object-contain w-[36px] h-[50px]'
-                                    src={item.imgurl} 
-                                    alt={item.title} />
-                                    <span className='ml-[7.4px]'>{item.title}</span>
+                                    src={item?.image[0]} 
+                                    alt={item?.name} />
+                                    <span className='ml-[7.4px] text-[11px] text-[#023337] font-medium line-clamp-1'>{item?.name}</span>
+                                    {/* <span className='text-[11px] text-[#8B909A]'>item {item?.productId}</span> */}
                                 </div>
-                                <span>₹{item.amount}</span>
+                                <span>₹{item?.finalPrice}</span>
                             </div>
                         ))}
                     </div>
@@ -325,18 +374,25 @@ const bestSellingData = [
                             </thead>
                             <tbody>
                                 
-                                {bestSellingData.map((item)=>(
-                                    <tr key={item.id}>
+                                {bestSelling.map((item)=>(
+                                    <tr key={item?.productId}>
                                         <td className="px-3 py-4">
-                                            <img
-                                            className='w-[52px] h-[67px] object-contain' 
-                                            src={item.imgUrl} alt={item.imgUrl} />
+                                            <div className="flex items-center gap-2">
+                                                <img
+                                                    src={item?.image[0]}
+                                                    alt={item?.name}
+                                                    className="h-[67px] w-[52px] object-contain"
+                                                />
+                                                <span className="text-[14px] text-[#023337] font-semibold">
+                                                    {item?.name}
+                                                </span>
+                                            </div>
                                         </td>
-                                        <td>{item.totalOrder}</td>
+                                        <td>{item?.totalSold}</td>
                                         <td
                                         className={item.status === "Stock" ? "text-green-500" : "text-red-500"}
                                         ><li>{item.status}</li></td>
-                                        <td>{item.price}</td>
+                                        <td>₹{item.finalPrice}</td>
                                     </tr>
                                 ))}
                                 

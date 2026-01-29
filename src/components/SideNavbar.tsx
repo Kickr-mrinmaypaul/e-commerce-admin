@@ -9,6 +9,7 @@ import Transaction from './Transaction';
 import CustomerManagement from './CustomerManagement';
 import AddProduct from './AddProduct';
 import Categories from './Categories';
+import ProductList from './ProductList';
 
 export default function SideNavbar() {
     const [isActive , setIsActive] = useState("Dashboard");
@@ -36,7 +37,7 @@ export default function SideNavbar() {
         return <AddProduct/>;
 
         case "Product List":
-        return <div>Product List Page</div>;
+        return <ProductList/>;
 
         default:
         return <Dashboard />;

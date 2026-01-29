@@ -3,7 +3,9 @@ import api from "@/utils/apiRequest";
 
 const OrderManagementServices = {
 
-    getAllOrders:()=> api.get(API_ENDPINTS.orderManagement.allOrders),
+    getAllOrders:(page: number)=> api.get(`${API_ENDPINTS.orderManagement.allOrders}?page=${page}`),
+    toatlSales:()=> api.get(API_ENDPINTS.orderManagement.totalSales),
+    bestSellingProducts:()=> api.get(API_ENDPINTS.orderManagement.bestSellingProducts),
 
 }
 
