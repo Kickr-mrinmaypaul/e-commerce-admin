@@ -12,7 +12,9 @@ export const API_ENDPINTS = {
         bestSellingProducts: "/admin/user/best-selling-products",
     },
     product:{
-        products: "/admin/product/all"    // get all products
+        products: "/admin/product/all",    // get all products
+        categories: "/admin/category/all",
+        addCategories: "/admin/category/add",
     },
     customer:{
         users: "/admin/user/all"    // get all users

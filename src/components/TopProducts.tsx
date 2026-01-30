@@ -9,32 +9,50 @@ import { FaPlus } from "react-icons/fa6";
 import ProductServices from '@/services/ProductServices';
 import Link from 'next/link';
 
-export default function ProductList() {
-  const [allProducts, setAllProducts] = useState<any[]>([]);
+export default function TopProducts() {
+  const [topProducts, setTopProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isActive, setIsActive] = useState();
   
 
-  const fetchAllProducts = async(currentPage = 1)=>{
-    try {
-      setLoading(true);
-      const response = await ProductServices.getAllProducts(currentPage);
-      setAllProducts(response?.data?.data);
-      setTotalPages(response?.data?.totalPage);
-      setPage(response?.data?.pageNo);
-      console.log("Get All Products resp:", response);
-    } catch (error) {
-      console.error(error);
-    }finally{
-      setLoading(false);
+//   const fetchAllProducts = async(currentPage = 1)=>{
+//     try {
+//       setLoading(true);
+//       const response = await ProductServices.getAllProducts(currentPage);
+//       setAllProducts(response?.data?.data);
+//       setTotalPages(response?.data?.totalPage);
+//       setPage(response?.data?.pageNo);
+//       console.log("Get All Products resp:", response);
+//     } catch (error) {
+//       console.error(error);
+//     }finally{
+//       setLoading(false);
+//     }
+//   }
+
+//     useEffect(()=>{
+//       fetchAllProducts(page);
+//     },[page])
+
+    const fetchBestSellingProducts = async()=>{
+        try {
+            setLoading(true);
+            const response = await OrderManagementServices.bestSellingProducts();
+            console.log("Best Selling products:", response);
+            const data = response?.data?.data || []
+            setTopProducts(data)
+        } catch (error) {
+            console.error(error);
+        }finally{
+            setLoading(false);
+        }
     }
-  }
 
     useEffect(()=>{
-      fetchAllProducts(page);
-    },[page])
+        fetchBestSellingProducts();
+    },[])
 
       const formatStatus = (status?: string) => {
       if (!status) return "";
@@ -56,7 +74,7 @@ export default function ProductList() {
   { "id": 3, "label": "CATEGORY" },
   { "id": 4, "label": "PRICE" },
   { "id": 5, "label": "STOCK" },
-  { "id": 6, "label": "STATUS" }
+  { "id": 6, "label": "DATE" }
 ]
 
 
@@ -74,22 +92,8 @@ export default function ProductList() {
     <div className='flex-1 flex flex-col min-h-0 pl-[15px] pr-[43px]'>
       <div className='w-full flex flex-row items-center justify-between'>
         <div className='flex flex-col'>
-            <span className='text-[13px] text-[#000000] font-bold mt-[5px]'>Product List</span>
+            <span className='text-[13px] text-[#000000] font-bold mt-[5px]'>Top Selling Products</span>
             <p className='text-[11px] text-[#6A717F]'>View and manage all products</p>
-        </div>
-        <div className='mt-[19px]'>
-            <Link
-            href={'/product/add-products'}
-            >
-              <Button
-
-              className='h-[28px] w-[101px] gap-1 items-center rounded-sm text-[12px] text-[#ffffff] bg-[#003BFF] hover:bg-[#1346f0] cursor-pointer'
-              >   
-                <FaPlus className='p-0.5'/>
-                Add Product
-                
-              </Button>
-            </Link>
         </div>
       </div>
       
@@ -110,7 +114,7 @@ export default function ProductList() {
             </tr>
           </thead>
           <tbody>
-            {allProducts.map((product)=>(
+            {topProducts.map((product)=>(
               <tr
               className='text-[13px] font-medium text-[#000000] '
               key={product?._id}
@@ -118,11 +122,11 @@ export default function ProductList() {
                 <td className='py-1 pl-[11px]'>
                     <div className="flex items-center gap-2">
                         <img
-                            src={product?.productImage[0]}
+                            src={product?.image[0]}
                             alt={product?.name}
                             className="h-[63px] w-[82px] object-contain"
                         />
-                        <span className="truncate max-w-[160px] text-[18px] text-[#023337] font-semibold">
+                        <span className="truncate max-w-[160px] text-[12px] text-[#023337] font-semibold">
                             {product?.name}
                         </span>
                     </div>

@@ -10,10 +10,20 @@ import CustomerManagement from './CustomerManagement';
 import AddProduct from './AddProduct';
 import Categories from './Categories';
 import ProductList from './ProductList';
+import { usePathname } from 'next/navigation';
+import { GoHome } from "react-icons/go";
+import { MdOutlineShoppingCart } from "react-icons/md";
+import { UserRound } from 'lucide-react';
+import { CopyPlus } from 'lucide-react';
+import { TiCreditCard } from "react-icons/ti";
+import { CiCirclePlus } from "react-icons/ci";
+import { FaCube } from "react-icons/fa6";
+
 
 export default function SideNavbar() {
     const [isActive , setIsActive] = useState("Dashboard");
     const router = useRouter();
+    const pathname = usePathname();
 
 
     const renderComponent = () => {
@@ -45,19 +55,33 @@ export default function SideNavbar() {
     };
 
 
+    // const sideMenuButton = [
+    //     {id: 1 , name: "Dashboard", icon: "/icon/dashboard_icon.png", route: "/"},
+    //     {id: 2, name: "Order Management", icon: "/icon/Order_icon.png", route: "/"},
+    //     {id: 3, name: "Customers", icon: "/icon/customer_icon.png", route: "/"},
+    //     {id: 4, name: "Categories", icon: "/icon/categories_icon.png", route: "/"},
+    //     {id: 5, name: "Transactions", icon: "/icon/transaction_icon.png", route: "/"}
+    // ];
+
     const sideMenuButton = [
-        {id: 1 , name: "Dashboard", icon: "/icon/dashboard_icon.png", route: "/"},
-        {id: 2, name: "Order Management", icon: "/icon/Order_icon.png", route: "/"},
-        {id: 3, name: "Customers", icon: "/icon/customer_icon.png", route: "/"},
-        {id: 4, name: "Categories", icon: "/icon/categories_icon.png", route: "/"},
-        {id: 5, name: "Transactions", icon: "/icon/transaction_icon.png", route: "/"}
+    { id: 1, name: "Dashboard", icon: <GoHome className='h-3'/>, route: "/" },
+    { id: 2, name: "Order Management", icon: <MdOutlineShoppingCart className='h-3'/>, route: "/order-management" },
+    { id: 3, name: "Customers", icon: <UserRound className='h-3'/>, route: "/customers" },
+    { id: 4, name: "Categories", icon: <CopyPlus className='h-3'/>, route: "/categories"},
+    { id: 5, name: "Transactions", icon: <TiCreditCard className='h-3'/>, route: "/transaction" },
     ];
 
     const productItems = [
-        {id: 6 , name: "Add Products", icon: "/icon/circle-plus.png", route: "/"},
-        {id: 7 , name: "Product List", icon: "/icon/product-list-icon.png", route: "/"},
-        {id: 8, name: "Log In", icon: "/icon/circle-plus.png", route: "/login"}
-    ]
+    { id: 6, name: "Add Products", icon: <CiCirclePlus className='h-3'/>, route: "/product/add-products"},
+    { id: 7, name: "Product List", icon: <FaCube className='h-3'/>, route: "/product/product-list"},
+    {id: 8, name: "Log In", icon: "", route: "/login"}
+    ];
+
+    // const productItems = [
+    //     {id: 6 , name: "Add Products", icon: "/icon/circle-plus.png", route: "/"},
+    //     {id: 7 , name: "Product List", icon: "/icon/product-list-icon.png", route: "/"},
+    //     {id: 8, name: "Log In", icon: "/icon/circle-plus.png", route: "/login"}
+    // ]
 
   return (
 <div className='flex flex-row min-h-screen'>
@@ -76,18 +100,21 @@ export default function SideNavbar() {
                     {sideMenuButton.map((menu)=>(
                     <div 
                     key={menu.id}
-                    className={`w-full px-1 py-[4.3px] rounded-sm ${isActive == menu.name ? "bg-[#003BFF] text-[#ffffff]" : "text-[#6A717F]  "} `}>
+                    className={`w-full px-1 py-[4.3px] rounded-sm ${pathname === menu.route ? "bg-[#003BFF] text-[#ffffff]" : "text-[#6A717F]  "} `}>
                         <li
                         onClick={()=> {
-                            setIsActive(menu.name);
+                            // setIsActive(menu.name);
                             router.push(menu.route);
                         }}
                         className={`w-full flex flex-row gap-2 items-center cursor-pointer`}
                         key={menu.id}>
-                            <img 
+                            {/* <img 
                             className="h-3"
                             alt={menu.name}
-                            src={menu.icon}/>
+                            src={menu.icon}/> */}
+                            <div>
+                                {menu.icon}
+                            </div>
                             {menu.name}
                         </li>
                     </div> 
@@ -103,16 +130,19 @@ export default function SideNavbar() {
                         {productItems.map((item)=>(
                             <li
                             onClick={()=> {
-                                    setIsActive(item.name);
+                                    //setIsActive(item.name);
                                     router.push(item.route)
                                 }
                             }
-                            className={`w-full flex flex-row gap-2 items-center cursor-pointer px-1 py-[4.3px] rounded-sm ${isActive == item.name ? "bg-[#003BFF] text-[#ffffff]" : "text-[#6A717F]  "} `}
+                            className={`w-full flex flex-row gap-2 items-center cursor-pointer px-1 py-[4.3px] rounded-sm ${pathname === item.route ? "bg-[#003BFF] text-[#ffffff]" : "text-[#6A717F]  "} `}
                             key={item.id}
                             >   
-                                <img 
+                                {/* <img 
                                 className='h-3 text-white'
-                                src={item.icon} alt={item.name} />
+                                src={item.icon} alt={item.name} /> */}
+                                <div>
+                                    {item.icon}
+                                </div>
                                 {item.name}
                             </li>
                         ))}
@@ -121,10 +151,10 @@ export default function SideNavbar() {
             </div>
         </nav>
     </aside>
-    <div className='flex-1 min-w-0'>
-        <Navbar title={isActive}/>
-        {renderComponent()}
-    </div>
+    {/* <div className='flex-1 min-w-0'>
+        <Navbar title={isActive}/> */}
+        {/* {renderComponent()} */}
+    {/* </div> */}
 </div>
   )
 }

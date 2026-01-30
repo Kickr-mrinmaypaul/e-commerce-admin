@@ -11,6 +11,7 @@ import Button from './button/Button';
 import OrderManagementServices from '@/services/OrderManagementServices';
 
 
+
 type DashboardStats = {
   totalSales: number;
   totalOrders: number;
@@ -240,7 +241,7 @@ const bestSellingData = [
                 <div className='w-[30%] flex flex-col py-[9.34px] px-[7.47px] bg-[#ffffff] border-[#00000033] shadow-md rounded-sm'>
                     <div className='flex flex-row justify-between'>
                         <span className='text-[#23272E] text-[15px] font-bold'>Top Products</span>
-                        <Link href={'#'} className='text-[14px] text-[#003BFF]'>All Product</Link>
+                        <Link href={'/top-products'} className='text-[14px] text-[#003BFF]'>All Product</Link>
                     </div>
                     <div className='flex flex-row items-center gap-2 bg-[#F9FAFB] px-3 py-0.5 mt-[5.61px] rounded-md'>
                         <CiSearch />

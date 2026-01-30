@@ -51,10 +51,11 @@ export default function OrderManagement() {
     const orders = [
   { "id": 1, "label": "Order" },
   { "id": 2, "label": "Customer" },
-  { "id": 3, "label": "Items" },
-  { "id": 4, "label": "Amount" },
-  { "id": 5, "label": "Status" },
-  { "id": 6, "label": "Date" }
+  {"id": 3, "label": "Type"},
+  { "id": 4, "label": "Items" },
+  { "id": 5, "label": "Amount" },
+  { "id": 6, "label": "Status" },
+  { "id": 7, "label": "Date" }
 ]
 
   const DataLabel = [
@@ -133,6 +134,7 @@ export default function OrderManagement() {
               >
                 <td className='py-1 pl-[11px]'>{order?.orderId}</td>
                 <td className='py-1 pl-[11px]'>{order?.user}</td>
+                <td className='py-1 pl-[11px]'>{order?.paymentMethod}</td>
                 <td className='py-1 pl-[11px] text-[#00000061]'>{order?.items?.length} items</td>
                 <td className='py-1 pl-[11px]'>₹{order?.totalAmount}</td>
                 <td className='py-1 pl-[11px]'>{formatStatus(order?.orderStatus)}</td>
