@@ -9,100 +9,31 @@ import Link from 'next/link';
 import FilterButton from './button/FilterButton';
 import Button from './button/Button';
 import OrderManagementServices from '@/services/OrderManagementServices';
+import { Loader2 } from 'lucide-react';
 
 
 
 type DashboardStats = {
   totalSales: number;
   totalOrders: number;
-  pendingCancel: number;
+  pending: number;
+  canceled: number;
 };
-
 
 export default function Dashboard() {
     const [isActive, setIsActive] = useState("This week");
     const [transactionData, setTransactionData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [loadingToalSales, setLoadingTotalSales] = useState(false);
-    const [stats, setStats] = useState<DashboardStats>({totalSales: 0, totalOrders: 0,pendingCancel: 0,})
+    const [stats, setStats] = useState<DashboardStats>({totalSales: 0, totalOrders: 0, pending: 0, canceled: 0});
+    const [pastData, setPastData] = useState<DashboardStats>({totalSales: 0, totalOrders: 0, pending: 0, canceled: 0});
     const [loadingBestSelling, setLoadingBestSelling] = useState(false);
     const [bestSelling, setBestSelling] = useState([])
 
-
-    const fetchTransaction = async()=>{
-        try {
-            setLoading(true);
-            const response = await OrderManagementServices.getAllOrders();
-            const transactions = response?.data?.transactions || [];
-            console.log("Dahboard transaction data:", response);
-            setTransactionData(transactions.slice(0, 4));
-        } catch (error) {
-            console.error(error);
-        }finally{
-            setLoading(false);
-        }
-    }
-
-    useEffect(()=>{
-        fetchTransaction();
-    },[])
-
-    // const fetchDahboardData = async()=>{
-    //     try {
-    //         setLoadingTotalSales(true);
-    //         const [salesRes, orderRes] = await Promise.all([
-    //             OrderManagementServices.toatlSales(),
-
-    //         ])
-            
-    //     } catch (error) {
-    //         console.error(error);
-    //     }finally{
-    //         setLoadingTotalSales(false);
-    //     }
-    // }
-
-    // useEffect(()=>{
-    //     fetchDahboardData();
-    // },[])
-
-    const fetchBestSellingProducts = async()=>{
-        try {
-            setLoadingBestSelling(true);
-            const response = await OrderManagementServices.bestSellingProducts();
-            console.log("Best Selling products:", response);
-            const data = response?.data?.data || []
-            setBestSelling(data.slice(0,4))
-        } catch (error) {
-            console.error(error);
-        }finally{
-            setLoadingBestSelling(false);
-        }
-    }
-
-    useEffect(()=>{
-        fetchBestSellingProducts();
-    },[])
-
-    const formatStatus = (status?: string) => {
-      if (!status) return "";
-      return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-    };
-
-    const formatDate = (date?: string) => {
-      if (!date) return "";
-      return new Date(date).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-    };
-
-
     const progressDiv = [
-        {id: 1, title: "Total Sales", days: "Last 7 days"},
-        {id: 2, title: "Total Orders", days: "Last 7 days"},
-        {id: 3, title: "Pending & Cancle", days: "Last 7 days"}
+        {id: 1, title: "Total Sales", days: "Last 7 days" , link: "/transaction"},
+        {id: 2, title: "Total Orders", days: "Last 7 days", link: "/order-management"},
+        // {id: 3, title: "Pending & Canceled", days: "Last 7 days"}
     ] 
 
     const btn = [
@@ -178,6 +109,95 @@ const bestSellingData = [
     {id: 4, imgUrl: "/globe.svg", totalOrder: "131", status: "Stock", price: "12000"},
 ]
 
+    const fetchTransaction = async()=>{
+        try {
+            setLoading(true);
+            const response = await OrderManagementServices.getAllOrders(1);
+            const transactions = response?.data?.transactions || [];
+            console.log("Dahboard transaction data:", response);
+            setTransactionData(transactions.slice(0, 4));
+        } catch (error) {
+            console.error(error);
+        }finally{
+            setLoading(false);
+        }
+    }
+
+    useEffect(()=>{
+        fetchTransaction();
+    },[])
+
+    const fetchDahboardData = async()=>{
+        try {
+            setLoadingTotalSales(true);
+            const [salesRes, orders, pending, canceled] = await Promise.all([
+                OrderManagementServices.toatlSales(),
+                OrderManagementServices.getAllOrdersData(),
+                OrderManagementServices.getPendingOrders(),
+                OrderManagementServices.getCanceledOrders(),
+            ])
+            console.log("Total sales:", salesRes);
+            console.log('Total Orders:', orders);
+            console.log("Total pending:", pending);
+            console.log("Total canceled:", canceled);
+            setStats({
+                totalSales: salesRes?.data?.totalPrice,
+                totalOrders: orders?.data?.data?.totalOrders,
+                pending: pending?.data?.total,
+                canceled: canceled?.data?.total
+            })
+            setPastData({
+                totalSales: salesRes?.data?.totalPrice7days,
+                totalOrders: orders?.data?.data?.last7DaysOrders,
+                pending: orders?.data?.data?.totalOrders,
+                canceled: canceled?.data?.total
+            })
+        } catch (error) {
+            console.error(error);
+        }finally{
+            setLoadingTotalSales(false);
+        }
+    }
+
+    useEffect(()=>{
+        fetchDahboardData();
+    },[])
+
+    const fetchBestSellingProducts = async()=>{
+        try {
+            setLoadingBestSelling(true);
+            const response = await OrderManagementServices.bestSellingProducts();
+            console.log("Best Selling products:", response);
+            const data = response?.data?.data || []
+            setBestSelling(data.slice(0,4))
+        } catch (error) {
+            console.error(error);
+        }finally{
+            setLoadingBestSelling(false);
+        }
+    }
+
+    useEffect(()=>{
+        fetchBestSellingProducts();
+    },[])
+
+    const formatStatus = (status?: string) => {
+      if (!status) return "";
+      return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+    };
+
+    const formatDate = (date?: string) => {
+      if (!date) return "";
+      return new Date(date).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    };
+
+
+    
+
   return (
     <div className='flex-1 flex flex-col min-h-0 '>
         {/* progress div sales and order*/}
@@ -197,17 +217,54 @@ const bestSellingData = [
                         </div>
                         <div>
                             <div>
-                                <span className='text-[16px] text-[#023337] font-bold'>50000</span>
-                                <p className='text-[10px] text-[#6A717F]'>Previous 7 days</p>
+                                <span className='text-[16px] text-[#023337] font-bold'>{loadingToalSales ? "Loading..." : 
+                                (item.id === 1 ? `₹${stats.totalSales}` :
+                                item.id === 2 ? `${stats.totalOrders}` :
+                                0)}</span>
+                                <span className='text-[10px] text-[#6A717F] flex flex-row gap-2'>Previous 7 days <p className='text-[#003BFF] text-[10px]'>{loadingToalSales ? "Loading..." : 
+                                (item.id === 1 ? `₹${pastData.totalSales}` :
+                                item.id === 2 ? pastData.totalOrders :
+                                0)}</p></span>
                             </div>
                         </div>
                         <div className='flex justify-end items-center'>
-                            <DetailsButton title='Details'/>
+                            <Link 
+                            key={item.id}
+                            href={item.link}>
+                                    <DetailsButton
+                                    title='Details'/>
+                            </Link>
             
                         </div>
                     </div>
                 ))}
+                <div>
+                    <div className='bg-[#FFFFFF] border border-[#00000033] rounded-sm shadow  p-[9.34px]'>
+                        <div className='flex flex-row items-center justify-between mb-[29px]'>
+                            <div>
+                                <span className='text-[#23272E] text-[15px] font-bold'>Pending & Canceled</span>
+                                <p className='text-[#6A717F] text-[10px]'>Last 7 days</p>
+                            </div>
+                            <span className='h-[18px] text-[#6A717F] cursor-pointer'><HiDotsVertical /></span>
+                        </div>
+                        <div className='flex flex-row items-center gap-[21px]'>
+                            <div>
+                                <span className='text-[10px] text-[#6A717F] flex flex-row gap-2'>Pending</span>
+                                <span className='text-[12px] text-[#023337] font-bold'>{loadingToalSales ? "Loading..." : (stats?.pending || 0)}</span>
+                            </div>
+                            <div>
+                                <span className='text-[10px] text-[#6A717F] flex flex-row gap-2'>Canceled</span>
+                                <span className='text-[12px] text-[#EF4343] font-bold'>{stats?.canceled || 0} </span>
+                            </div>
+                        </div>
+                        <div className='flex justify-end items-center'>
+                            <DetailsButton title='Details'/>
+        
+                        </div>
+                    </div> 
+                </div>
             </div>
+            
         </section>
 
         {/* Area chart*/}
@@ -352,9 +409,16 @@ const bestSellingData = [
         </section>
 
              {/*Best selling products*/}           
-        <section className='flex-1 p-4'>
+        <section className='flex-1 p-4 relative'>
+
             <div className='w-full flex flex-row gap-[52px]'>
-                <div className='w-[65%] bg-[#ffffff] pl-[15px] '>
+                
+                <div className='w-[65%] bg-[#ffffff] pl-[15px] relative'>
+                    {loadingBestSelling && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-10">
+                    <Loader2 className="animate-spin text-blue-500 h-10 w-10" />
+                    </div>
+                    )}
                     <div className='w-full flex flex-row items-center justify-between pt-[8px] pr-[9px]'>
                         <span className='text-[14px] font-bold text[#23272E]'>Best Selling Products</span>
                         <FilterButton title='Filter'/>

@@ -4,7 +4,14 @@ import React, { useEffect, useState } from 'react'
 import OrderManagementServices from '@/services/OrderManagementServices';
 import { Loader2 } from 'lucide-react';
 import PaginationBtn from './button/PaginationBtn';
+import ProductServices from '@/services/ProductServices';
 
+type DashboardStats = {
+  totalOrders: number;
+  pending: number;
+  canceled: number;
+  complete: number;
+};
 
 export default function OrderManagement() {
   const [isActive, setIsActive] = useState("All Order");
@@ -12,17 +19,52 @@ export default function OrderManagement() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState();
+  const [stats, setStats] = useState<DashboardStats>({totalOrders: 0, pending: 0, canceled: 0, complete: 0});
+  const [loadingToalSales, setLoadingTotalSales] = useState(false);
+  const [activeStatus, setActiveStatus] = useState<string>("all");
 
+  const orders = [
+  { "id": 1, "label": "Order" },
+  { "id": 2, "label": "Customer" },
+  {"id": 3, "label": "Type"},
+  { "id": 4, "label": "Items" },
+  { "id": 5, "label": "Amount" },
+  { "id": 6, "label": "Status" },
+  { "id": 7, "label": "Date" }
+]
 
-  const fetchAllOrders = async(currentPage = 1)=>{
+  const DataLabel = [
+  { id: 1, label: "All Order", key: "all" },
+  { id: 2, label: "Pending", key: "pending" },
+  { id: 3, label: "Processing", key: "processing" },
+  { id: 4, label: "Shipped", key: "shipped" },
+  { id: 5, label: "Completed", key: "completed" },
+];
+
+  const fetchOrdersByStatus = async(status: string, currentPage = 1) =>{
     try {
       setLoading(true);
-      const response = await OrderManagementServices.getAllOrders(currentPage);
-      setAllOrders(response?.data?.transactions);
-      setTotalPages(response?.data?.totalPage);
-      setPage(response?.data?.page);
+      let response;
 
-      console.log("Get All Orders resp:", response);
+      switch(status){
+        case "all":
+          response = await OrderManagementServices.getAllOrders(currentPage);
+          break;
+        case "pending":
+          response = await ProductServices.getPendingProducts(currentPage);
+          break;
+
+        default:
+        response = await OrderManagementServices.getAllOrders(currentPage);
+        break;
+
+      }
+      console.log("Status change data:", response);
+      setAllOrders(response?.data?.transactions || response?.data?.data);
+      setTotalPages(response?.data?.totalPage || 1);
+      setPage(response?.data?.page || currentPage);
+      
     } catch (error) {
       console.error(error);
     }finally{
@@ -30,9 +72,29 @@ export default function OrderManagement() {
     }
   }
 
-    useEffect(()=>{
-      fetchAllOrders(page);
-    },[page])
+  useEffect(() => {
+  fetchOrdersByStatus(activeStatus, page);
+}, [activeStatus, page]);
+
+  // const fetchAllOrders = async(currentPage = 1)=>{
+  //   try {
+  //     setLoading(true);
+  //     const response = await OrderManagementServices.getAllOrders(currentPage);
+  //     setAllOrders(response?.data?.transactions);
+  //     setTotalPages(response?.data?.totalPage);
+  //     setPage(response?.data?.page);
+
+  //     console.log("Get All Orders resp:", response);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }finally{
+  //     setLoading(false);
+  //   }
+  // }
+
+  //   useEffect(()=>{
+  //     fetchAllOrders(page);
+  //   },[page])
 
       const formatStatus = (status?: string) => {
       if (!status) return "";
@@ -48,23 +110,48 @@ export default function OrderManagement() {
       });
     };
 
-    const orders = [
-  { "id": 1, "label": "Order" },
-  { "id": 2, "label": "Customer" },
-  {"id": 3, "label": "Type"},
-  { "id": 4, "label": "Items" },
-  { "id": 5, "label": "Amount" },
-  { "id": 6, "label": "Status" },
-  { "id": 7, "label": "Date" }
-]
 
-  const DataLabel = [
-    { "id": 1, "label": "All Order" , "data": "50000"},
-    { "id": 2, "label": "pending" , "data": "50000"},
-    { "id": 3, "label": "Processing", "data": "50000" },
-    { "id": 4, "label": "Shipped" , "data": "50000"},
-    { "id": 5, "label": "Completed" , "data": "50000"},
-  ]
+    const fetchTotalOrders = async ()=>{
+      try {
+        const response = await OrderManagementServices.getAllOrdersData();
+        console.log("total orders data:", response);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    useEffect(()=>{
+      fetchTotalOrders();
+    },[])
+
+    const fetchDahboardData = async()=>{
+        try {
+            setLoadingTotalSales(true);
+            const [orders, pending, canceled, complete] = await Promise.all([
+                OrderManagementServices.getAllOrdersData(),
+                OrderManagementServices.getPendingOrders(),
+                OrderManagementServices.getCanceledOrders(),
+                OrderManagementServices.getCompletedOrder(),
+            ])
+            console.log('Total Orders:', orders);
+            console.log("Total pending:", pending);
+            console.log("Total canceled:", canceled);
+            setStats({
+                totalOrders: orders?.data?.data?.totalOrders,
+                pending: pending?.data?.total,
+                canceled: canceled?.data?.total,
+                complete: complete?.data?.totalOrder,
+            })
+        } catch (error) {
+            console.error(error);
+        }finally{
+            setLoadingTotalSales(false);
+        }
+    }
+
+    useEffect(()=>{
+        fetchDahboardData();
+    },[])
 
     //   const DataLabel = [
     //   { id: 1, label: "All Orders", key: "all" },
@@ -99,12 +186,21 @@ export default function OrderManagement() {
       <div className='flex flex-row justify-between mt-[14px]'>
         {DataLabel.map((item)=>(
           <div
-          onClick={()=> setIsActive(item.label)}
-          className={`flex flex-col pl-[5px] pr-[156px] pt-[5px] pb-[10px]  items-start space-y-3 rounded-sm cursor-pointer ${isActive == item.label? 'bg-[#EAF8E7]' : 'bg-[#ffffff]'}`}
+          onClick={()=> {
+            setActiveStatus(item.key)
+            setPage(1);
+          }}
+          className={`flex flex-col pl-[5px] pr-[156px] pt-[5px] pb-[10px]  items-start space-y-3 rounded-sm cursor-pointer ${activeStatus === item.key ? 'bg-[#EAF8E7]' : 'bg-[#ffffff]'}`}
           key={item.id}
           >
             <span className='text-[10px] text-[#001409] font-medium'>{item.label}</span>
-            <span className='text-[15px] font-bold text-[#023337]'>{item.data}</span>
+            <span className='text-[15px] font-bold text-[#023337]'>{loadingToalSales ? "Loading..." : 
+              (item.id === 1 ? `${stats?.totalOrders}` :
+              item.id === 2 ? `${stats?.pending}` :
+              item.id === 3 ? `${stats?.canceled}`:
+              item.id === 4 ? `${stats?.canceled}`:
+              item.id === 5 ? `${stats?.complete}`:
+              0)}</span>
             {/* <span className='text-[15px] font-bold text-[#023337]'>{orderStats[item.key]}</span> */}
 
           </div>
@@ -132,9 +228,9 @@ export default function OrderManagement() {
               className='shadow-sm text-[13px] font-medium text-[#000000] '
               key={order?._id}
               >
-                <td className='py-1 pl-[11px]'>{order?.orderId}</td>
-                <td className='py-1 pl-[11px]'>{order?.user}</td>
-                <td className='py-1 pl-[11px]'>{order?.paymentMethod}</td>
+                <td className='py-1 pl-[11px]'>{order?.orderId }</td>
+                <td className='py-1 pl-[11px]'>{order?.user || order?.userEmail}</td>
+                <td className='py-1 pl-[11px]'>{order?.paymentMethod || order?.paymentStatus}</td>
                 <td className='py-1 pl-[11px] text-[#00000061]'>{order?.items?.length} items</td>
                 <td className='py-1 pl-[11px]'>₹{order?.totalAmount}</td>
                 <td className='py-1 pl-[11px]'>{formatStatus(order?.orderStatus)}</td>

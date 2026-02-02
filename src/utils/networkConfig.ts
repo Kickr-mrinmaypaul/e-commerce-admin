@@ -9,12 +9,19 @@ export const API_ENDPINTS = {
     orderManagement:{
         allOrders: "/admin/user/total-transaction",  // get all transaction details
         totalSales: "/admin/user/count-buyPrice",     // get total sales     
+        totalOrders: "/admin/user/",
         bestSellingProducts: "/admin/user/best-selling-products",
+        getAllOrdersbyUser: "/admin/user/count-buyProducts",
+        pendingOrders: "/admin/user/totalOrder-pending",
+        canceledOrders: "/admin/user/totalOrder-cancelled",
+        completeOrder: "/admin/user/total-order"
     },
     product:{
         products: "/admin/product/all",    // get all products
         categories: "/admin/category/all",
         addCategories: "/admin/category/add",
+        pendingProductsList: "/admin/notification/pending-all",
+        getTotalCategory: "/admin/category/total"
     },
     customer:{
         users: "/admin/user/all"    // get all users

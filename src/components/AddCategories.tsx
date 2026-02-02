@@ -7,6 +7,8 @@ import { Label } from './ui/label';
 import { Button } from './ui/button';
 import ProductServices from '@/services/ProductServices';
 import { Loader2 } from 'lucide-react';
+import { toast } from "sonner"
+import { useRouter } from 'next/navigation';
 
 
 export interface FormType {
@@ -20,6 +22,7 @@ export default function AddCategories() {
 
     const {register, handleSubmit, formState: {errors}} = useForm<FormType>();
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     const onSubmit  = async(data : FormType)=>{
         if(!data) return;
@@ -35,9 +38,14 @@ export default function AddCategories() {
             formData.append("categoryImage", data.categoryImage[0]);
             
             const response = await ProductServices.addCategories(formData);
+            if(response?.data?.success){
+                toast.success("Category added Successfully");
+                router.push('/categories')
+            }
             console.log("Add categories response", response);
         } catch (error) {
             console.error(error);
+            toast.error("Something went wrong.");
         }finally{
             setLoading(false);
         }
