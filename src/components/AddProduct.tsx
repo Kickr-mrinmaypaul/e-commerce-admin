@@ -7,7 +7,10 @@ import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
 import ProductServices from '@/services/ProductServices';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';  // ← ADD THIS
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+
 
 
 type ImageBoxProps = {
@@ -18,10 +21,11 @@ type ImageBoxProps = {
 export default function AddProduct() {
 
     const router = useRouter();
-    const {register, handleSubmit, formState: {errors}, watch, setValue  } = useForm<any>();
+    const {register, handleSubmit, formState: {errors}, watch, setValue, reset  } = useForm<any>();
     const [categories, setCategories] = useState<any[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(false);
     const [categoryError, setCategoryError] = useState<string | null>(null);
+    const [loadingAddProduct, setLoadingAddProduct] = useState(false);
 
     const mainImageRef = useRef<HTMLInputElement | null>(null);
     const imageFile = watch("productImage");
@@ -62,9 +66,48 @@ export default function AddProduct() {
         fetchCategories();
     }, []);
 
-    const onSubmit = async(data)=>{
+    const onSubmit = async(data : any)=>{
         if(!data) return;
-        console.log(data);
+        console.log("data",data);
+        const formData = new FormData();
+        formData.append("name", data?.productName);
+        formData.append("description", data?.description);
+        formData.append("price", data?.price)
+        formData.append("brand", data?.brand);
+        //formData.append("minimumAge", data?.description);
+        //formData.append("delivery", data?.price);
+        //formData.append("ideaFor", data?.productName);
+        formData.append("colour", data?.colour);
+        formData.append("stock", data?.stockQuantity)
+        formData.append("category", data?.category);
+
+        if (data.productImage?.[0]) {
+            formData.append("productImage", data.productImage[0]);
+        }
+        const extraImages = ["image1", "image2", "image3", "image4"];
+        extraImages.forEach((key) => {
+            if (data[key]?.[0]) {
+            formData.append("productImage", data[key][0]);
+            }
+        });
+
+        for (let pair of formData.entries()) {
+            console.log(pair[0], pair[1]);
+        }
+
+        try {
+            setLoadingAddProduct(true);
+            const response = await ProductServices.addProduct(formData);
+            if(response?.data?.data?.success){
+                toast.success("Product Added Successfully.");
+                reset();
+            }
+            console.log("add product form resp:", response);
+        } catch (error) {
+            console.error(error);
+        }finally{
+            setLoadingAddProduct(false);
+        }
     }
 
     const ImageBox = ({ preview, registerName }: ImageBoxProps) => {
@@ -97,6 +140,7 @@ export default function AddProduct() {
                     }}
 
                 />
+                {errors?.file && (<p className='text-xs text-red-500'>{errors?.file?.message}</p>)}
                 </div>
 
                 <Button
@@ -131,12 +175,13 @@ export default function AddProduct() {
                         </div> 
                         <div className='w-[80%] flex flex-row justify-between'>
                             <div>
-                                <Label className='text-[#000000] text-[14px] font-bold mb-[14px]' htmlFor='sku'>SKU*</Label>
+                                <Label className='text-[#000000] text-[14px] font-bold mb-[14px]' htmlFor='description'>Description*</Label>
                                 <Input
                                 className='bg-[#F3F5F7]'
-                                placeholder='Enter SKU'
-                                {...register("sku",{required: "SKU is Required."})}
+                                placeholder='Enter Description'
+                                {...register("description",{required: "Description is Required."})}
                                 />
+                                {errors?.description && <span className="text-red-500 text-xs">{errors?.description.message}</span>}
                             </div>
                             {/* <div>
                                 <Label className='text-[#000000] text-[14px] font-bold mb-[14px]' htmlFor='category'>Category*</Label>
@@ -173,7 +218,27 @@ export default function AddProduct() {
                                 {errors?.category && <span className="text-red-500 text-xs">{errors?.category.message}</span>}
                             </div>
                         </div>
-                        <div className='w-full flex flex-row justify-between'>
+                        <div className='w-[80%] flex flex-row justify-between'>
+                            <div>
+                                <Label className='text-[#000000] text-[14px] font-bold mb-[14px]' htmlFor='brand'>Brand*</Label>
+                                <Input
+                                className='bg-[#F3F5F7]'
+                                placeholder='Enter Brand name'
+                                {...register("brand",{required: "Brand is Required."})}
+                                />
+                                {errors?.brand && <span className="text-red-500 text-xs">{errors?.brand.message}</span>}
+                            </div>
+                            <div>
+                                <Label className='text-[#000000] text-[14px] font-bold mb-[14px]' htmlFor='colour'>Colour*</Label>
+                                <Input
+                                className='bg-[#F3F5F7]'
+                                placeholder='Enter Product Colour'
+                                {...register("colour",{required: "Product Colour is Required."})}
+                                />
+                                {errors?.colour && <span className="text-red-500 text-xs">{errors?.colour.message}</span>}
+                            </div>
+                        </div>
+                        <div className='w-[80%] flex flex-row justify-between'>
                             <div>
                                 <Label className='text-[#000000] text-[14px] font-bold mb-[14px]' htmlFor='price'>Price*</Label>
                                 <Input
@@ -181,15 +246,17 @@ export default function AddProduct() {
                                 placeholder='0.00'
                                 {...register("price",{required: "Price is Required."})}
                                 />
+                                {errors?.price && <p className="text-red-500 text-xs">{errors?.price?.message}</p>}
                             </div>
-                            <div>
+                            {/* <div>
                                 <Label className='text-[#000000] text-[14px] font-bold mb-[14px]' htmlFor='discountedPrice'>Discounted Price*</Label>
                                 <Input
                                 className='bg-[#F3F5F7]'
                                 placeholder='0.00'
                                 {...register("discountedPrice",{required: "Discounted Price is Required."})}
                                 />
-                            </div>
+                                {errors?.discountedPrice && <p className="text-red-500 text-xs">{errors?.discountedPrice?.message}</p>}
+                            </div> */}
                             <div>
                                 <Label className='text-[#000000] text-[14px] font-bold mb-[14px]' htmlFor='stockQuantity'>Stock Quantity</Label>
                                 <Input
@@ -197,6 +264,7 @@ export default function AddProduct() {
                                 placeholder='0'
                                 {...register("stockQuantity")}
                                 />
+                                {errors?.stockQuantity && <p className="text-red-500 text-xs">{errors?.stockQuantity?.message}</p>}
                             </div>
                         </div>
                     </div>
@@ -325,9 +393,9 @@ export default function AddProduct() {
                 <div className='w-full flex flex-row justify-end space-x-2 mt-2'>
                     <Button
                     type="submit"
-                    className='flex bg-[#003BFF] text-[10px] text-[#ffffff] h-[18px] w-[164px] rounded-none'
+                    className='flex bg-[#003BFF] hover:bg-[#003BFF] cursor-pointer text-[10px] text-[#ffffff] h-[18px] w-[164px] rounded-none'
                     >
-                        Submit
+                        {loadingAddProduct ? (<Loader2 className="animate-spin h-4 text-blue-500"/>) : ("Submit") }
                     </Button>
 
                     <Button

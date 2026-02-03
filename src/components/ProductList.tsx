@@ -8,6 +8,7 @@ import { Button } from './ui/button';
 import { FaPlus } from "react-icons/fa6";
 import ProductServices from '@/services/ProductServices';
 import Link from 'next/link';
+import { CiSearch } from 'react-icons/ci';
 
 export default function ProductList() {
   const [allProducts, setAllProducts] = useState<any[]>([]);
@@ -20,10 +21,11 @@ export default function ProductList() {
   const fetchAllProducts = async(currentPage = 1)=>{
     try {
       setLoading(true);
+      console.log(currentPage,"data of current page");
       const response = await ProductServices.getAllProducts(currentPage);
       setAllProducts(response?.data?.data);
       setTotalPages(response?.data?.totalPage);
-      setPage(response?.data?.pageNo);
+      // setPage(response?.data?.pageNo);
       console.log("Get All Products resp:", response);
     } catch (error) {
       console.error(error);
@@ -34,7 +36,13 @@ export default function ProductList() {
 
     useEffect(()=>{
       fetchAllProducts(page);
-    },[page])
+      console.log(page,"useeffect check ");
+    },[page]);
+
+    useEffect(()=>{
+      console.log(allProducts,"data of all products ");
+
+    },[allProducts]);
 
       const formatStatus = (status?: string) => {
       if (!status) return "";
@@ -77,7 +85,15 @@ export default function ProductList() {
             <span className='text-[13px] text-[#000000] font-bold mt-[5px]'>Product List</span>
             <p className='text-[11px] text-[#6A717F]'>View and manage all products</p>
         </div>
-        <div className='mt-[19px]'>
+        
+        <div className='mt-[19px] flex flex-row gap-4'>
+          <div className='flex flex-row items-center gap-2 bg-[#F9FAFB] px-3 py-0.5 rounded-md'>
+              <CiSearch />
+              <input
+              className='placeholder:text-[14px] outline-none'
+              placeholder='Search Products...' 
+              type="text" />
+          </div>
             <Link
             href={'/product/add-products'}
             >

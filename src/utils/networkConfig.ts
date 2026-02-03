@@ -21,7 +21,9 @@ export const API_ENDPINTS = {
         categories: "/admin/category/all",
         addCategories: "/admin/category/add",
         pendingProductsList: "/admin/notification/pending-all",
-        getTotalCategory: "/admin/category/total"
+        getTotalCategory: "/admin/category/total",
+        addProduct: "/admin/product/add",
+        editCategories: "/admin/category/edit-category",
     },
     customer:{
         users: "/admin/user/all"    // get all users

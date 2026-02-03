@@ -10,6 +10,8 @@ import FilterButton from './button/FilterButton';
 import Button from './button/Button';
 import OrderManagementServices from '@/services/OrderManagementServices';
 import { Loader2 } from 'lucide-react';
+import ProductServices from '@/services/ProductServices';
+import { useRouter } from 'next/navigation';
 
 
 
@@ -29,6 +31,13 @@ export default function Dashboard() {
     const [pastData, setPastData] = useState<DashboardStats>({totalSales: 0, totalOrders: 0, pending: 0, canceled: 0});
     const [loadingBestSelling, setLoadingBestSelling] = useState(false);
     const [bestSelling, setBestSelling] = useState([])
+    const[loadingCategories, setLoadingCategories] = useState(false);
+    const[categories, setCategories] = useState([]);
+    const [allProducts, setAllProducts] = useState<any[]>([]);
+    const [loadingProducts, setLoadingProducts] = useState(false);
+
+    const router = useRouter();
+    
 
     const progressDiv = [
         {id: 1, title: "Total Sales", days: "Last 7 days" , link: "/transaction"},
@@ -181,6 +190,42 @@ const bestSellingData = [
         fetchBestSellingProducts();
     },[])
 
+
+    const fetchCategories = async ()=>{
+    try {
+      setLoadingCategories(true);
+      const response = await ProductServices.getAllCategories(1);
+      setCategories(response?.data?.data)
+      console.log("get categories resp:", response);
+    } catch (error) {
+      console.error(error);
+    }finally{
+      setLoadingCategories(false);
+    }
+  }
+
+    useEffect(()=>{
+        fetchCategories();
+    },[])
+
+    const fetchAllProducts = async()=>{
+    try {
+      setLoading(true);
+      const response = await ProductServices.getAllProducts(1);
+      const data = response?.data?.data
+      setAllProducts(data.slice(0, 5));
+      console.log("Get All Products resp:", response);
+    } catch (error) {
+      console.error(error);
+    }finally{
+      setLoading(false);
+    }
+  }
+
+  useEffect(()=>{
+    fetchAllProducts();
+  },[])
+
     const formatStatus = (status?: string) => {
       if (!status) return "";
       return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
@@ -222,8 +267,8 @@ const bestSellingData = [
                                 item.id === 2 ? `${stats.totalOrders}` :
                                 0)}</span>
                                 <span className='text-[10px] text-[#6A717F] flex flex-row gap-2'>Previous 7 days <p className='text-[#003BFF] text-[10px]'>{loadingToalSales ? "Loading..." : 
-                                (item.id === 1 ? `₹${pastData.totalSales}` :
-                                item.id === 2 ? pastData.totalOrders :
+                                (item.id === 1 ? `₹${pastData.totalSales}` || 0  :
+                                item.id === 2 ? pastData.totalOrders || 0:
                                 0)}</p></span>
                             </div>
                         </div>
@@ -371,7 +416,9 @@ const bestSellingData = [
                         <div
                         className='w-full flex justify-end pr-[34px]'
                         >
-                            <DetailsButton title='Details'/>
+                            <Link href={'/transaction'}>
+                                <DetailsButton title='Details'/>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -475,47 +522,57 @@ const bestSellingData = [
                     <div className='flex flex-col'>
                         <div className='flex flex-row justify-between items-center'>
                             <h2 className='text-[15px] text-[#000000] font-bold'>Add New Product</h2>
-                            <button className='text-[10px] font-medium text-[#003BFF]'>Add New</button>
+                            <Link href={'/categories/add-categories'}
+                            className='text-[10px] font-medium text-[#003BFF]'>
+                                Add New
+                            </Link>
                         </div>
                         <span className='text-[10px] text-[#6A717F] '>Categories</span>
                     </div>
                     <div className='flex flex-col mt-[30px]'>
-                        {topProducts.map((item)=>(
+                        {categories.map((item)=>(
                             <div
                             className='flex flex-row space-x-2 mb-2 items-center shadow-sm pl-1 py-1'
-                            key={item.id}
+                            key={item._id}
                             >
                                 <img 
                                 className='w-[22px] h-[28px] object-contain'
-                                src={item.imgurl} alt={item.title} />
-                                <span className='text-[10px] text-[#000000]'>{item.title}</span>
+                                src={item.categoryImage} alt={item.subName} />
+                                <span className='text-[10px] text-[#000000]'>{item.subName}</span>
                             </div>
                         ))}        
                     </div>
-                    <span className='flex items-center justify-center text-[12px] text-[#6467F2] font-medium cursor-pointer'>See more</span>
+                    <Link href={'/categories'}>
+                        <span className='flex items-center justify-center text-[12px] text-[#6467F2] font-medium cursor-pointer'>See more</span>
+                    </Link>
                     <div className='mt-[23px]'>
                         <span className='text-[10px] text-[#6A717F] font-medium'>Product</span>
                         <div>
-                            {topProducts.map((item)=>(
+                            {allProducts.map((item)=>(
                             <div
                             className='flex flex-row space-x-2 mb-2 items-center shadow-sm pl-1 py-1'
-                            key={item.id}
+                            key={item._id}
                             >
                                 <img 
                                 className='w-[22px] h-[28px] object-contain'
-                                src={item.imgurl} alt={item.title} />
+                                src={item.productImage[0]} alt={item.name} />
                                 <div className='flex flex-col'>
-                                    <span className='text-[12px] text-[#000000]'>{item.title}</span>
-                                    <span className='text-[10px] font-bold text-[#003BFF]'>{item.amount}</span>
+                                    <span className='text-[12px] text-[#000000]'>{item.name}</span>
+                                    <span className='text-[10px] font-bold text-[#003BFF]'>{item.price}</span>
                                 </div>
+                                
                                 <Button 
+                                onClick={()=> router.push('/product/add-products')}
                                 className='ml-auto'
                                 icon={"/icon/circle-plus.png"}
                                 title='Add'/>
+                                
                             </div>
                         ))} 
                         </div>
-                        <span className='flex items-center justify-center text-[12px] text-[#6467F2] font-medium cursor-pointer'>See more</span>
+                        <Link href={'/product/product-list'}>
+                            <span className='flex items-center justify-center text-[12px] text-[#6467F2] font-medium cursor-pointer'>See more</span>
+                        </Link>
                     </div>
                 </div>
             </div>

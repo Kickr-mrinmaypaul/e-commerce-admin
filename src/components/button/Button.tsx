@@ -8,18 +8,22 @@ type ButtonProps = {
 //   disabled?: boolean;
   icon?: string
   className?: string;
+  onClick?: () => void; 
 };
 
 export default function Button(
     {
         title,
         icon,
-        className=""
+        className="",
+        onClick,
     }: ButtonProps
 ) {
   return (
     
-    <button className={`
+    <button 
+    onClick={onClick} 
+    className={`
     flex items-center gap-1
     text-[10px] font-medium text-white
     cursor-pointer

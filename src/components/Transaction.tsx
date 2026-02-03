@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import OrderManagementServices from '@/services/OrderManagementServices';
 import { Loader2 } from 'lucide-react';
 import PaginationBtn from './button/PaginationBtn';
+import { CiSearch } from 'react-icons/ci';
 
 export default function Transaction() {
   const [isActive, setIsActive] = useState("All Order");
@@ -18,7 +19,7 @@ export default function Transaction() {
       const response = await OrderManagementServices.getAllOrders(currentPage);
       setAllOrders(response?.data?.transactions);
       setTotalPages(response?.data?.totalPage);
-      setPage(response?.data?.page);
+      // setPage(response?.data?.page);
       console.log("Get All Orders resp:", response);
     } catch (error) {
       console.error(error);
@@ -66,9 +67,19 @@ export default function Transaction() {
 
   return (
     <div className='flex-1 flex flex-col min-h-0 pl-[15px] pr-[43px]'>
-      <span className='text-[13px] text-[#000000] font-bold mt-[5px]'>Transactions</span>
-      <p className='text-[11px] text-[#6A717F]'>Track all financial transactions</p>
-      
+      <div className='flex flex-row items-center justify-between'>
+        <div className='flex flex-col'>
+          <span className='text-[13px] text-[#000000] font-bold mt-[5px]'>Transactions</span>
+          <p className='text-[11px] text-[#6A717F]'>Track all financial transactions</p>
+        </div>
+        <div className='flex flex-row items-center gap-2 bg-[#F9FAFB] px-3 py-0.5 rounded-md'>
+            <CiSearch />
+            <input
+            className='placeholder:text-[14px] outline-none'
+            placeholder='Search Transcation by id...' 
+            type="text" />
+        </div>
+      </div>
       <div className='w-full bg-[#ffffff] mt-[13px] p-4 rounded-sm'>
         <table className='w-full border-separate border-spacing-y-3 '>
           <thead>
