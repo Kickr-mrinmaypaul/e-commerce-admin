@@ -9,6 +9,7 @@ import { FaPlus } from "react-icons/fa6";
 import ProductServices from '@/services/ProductServices';
 import Link from 'next/link';
 import { CiSearch } from 'react-icons/ci';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function ProductList() {
   const [allProducts, setAllProducts] = useState<any[]>([]);
@@ -16,7 +17,8 @@ export default function ProductList() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isActive, setIsActive] = useState();
-  
+  const [query, setQuery] = useState<string>('');
+  const debouncedQuey = useDebounce({value: query, delay: 500,});
 
   const fetchAllProducts = async(currentPage = 1)=>{
     try {
@@ -39,10 +41,31 @@ export default function ProductList() {
       console.log(page,"useeffect check ");
     },[page]);
 
-    useEffect(()=>{
-      console.log(allProducts,"data of all products ");
+    // useEffect(()=>{
+    //   console.log(allProducts,"data of all products ");
 
-    },[allProducts]);
+    // },[allProducts]);
+
+
+
+    useEffect(()=>{
+      if (!debouncedQuey || debouncedQuey.trim().length < 2) {
+        setAllProducts([]);
+        return;
+      }
+      const searchProducts = async()=>{
+        try {
+          console.log("search query:", debouncedQuey);
+          const response = await ProductServices.searchProducts(debouncedQuey);
+          setAllProducts(response?.data?.data);
+          //setTotalPages(response?.data?.totalPage);
+          console.log("Search product resp:", response);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      searchProducts();
+    },[debouncedQuey]);
 
       const formatStatus = (status?: string) => {
       if (!status) return "";
@@ -57,6 +80,8 @@ export default function ProductList() {
         year: "numeric",
       });
     };
+
+
 
     const orders = [
   { "id": 1, "label": "PRODUCT" },
@@ -90,6 +115,7 @@ export default function ProductList() {
           <div className='flex flex-row items-center gap-2 bg-[#F9FAFB] px-3 py-0.5 rounded-md'>
               <CiSearch />
               <input
+              onChange={(e)=> setQuery(e.target.value)}
               className='placeholder:text-[14px] outline-none'
               placeholder='Search Products...' 
               type="text" />

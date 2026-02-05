@@ -18,6 +18,8 @@ type ImageBoxProps = {
   registerName: string;
 };
 
+
+
 export default function AddProduct() {
 
     const router = useRouter();

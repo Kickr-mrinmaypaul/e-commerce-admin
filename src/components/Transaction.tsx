@@ -104,7 +104,19 @@ export default function Transaction() {
               >
                 <td className='py-1 pl-[11px]'>{order?.orderId}</td>
                 <td className='py-1 pl-[11px] text-[#7C7C7C]'>{order?.paymentMethod}</td>
-                <td className='py-1 pl-[11px]'>{formatStatus(order?.orderStatus)}</td>
+                <td className={`py-1 pl-[11px]`} >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`h-1 w-1 rounded-full ${
+                        order?.paymentStatus ==="PAID" ? "bg-green-500" : "bg-white" || order?.paymentStatus ==="PENDING" ? "bg-yellow-500" : "bg-red-500"
+                      }`}
+                    ></span>
+                    <span>
+                      {formatStatus(order?.paymentStatus)}
+                    </span>
+                  </div>
+                {/* <li>{formatStatus(order?.paymentStatus)}</li> */}
+                </td>
                 <td className='py-1 pl-[11px]'>₹{order?.totalAmount}</td>
                 <td className='py-1 pl-[11px]'>{formatDate(order?.createdAt)}</td>
               </tr>

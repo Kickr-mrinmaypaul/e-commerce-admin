@@ -11,6 +11,7 @@ const OrderManagementServices = {
     getPendingOrders: ()=> api.get(API_ENDPINTS.orderManagement.pendingOrders),
     getCanceledOrders: ()=> api.get(API_ENDPINTS.orderManagement.canceledOrders),
     getCompletedOrder: ()=> api.get(API_ENDPINTS.orderManagement.completeOrder),
+    getCompleteOrderDelivery: (page: number)=> api.get(`${API_ENDPINTS.orderManagement.completeDelivery}?page=${page}`),
 }
 
 export default OrderManagementServices;

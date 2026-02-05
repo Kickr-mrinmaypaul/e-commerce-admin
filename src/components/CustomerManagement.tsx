@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react';
 import PaginationBtn from './button/PaginationBtn';
 import CustomerServices from '@/services/CustomerServices';
+import OrderManagementServices from '@/services/OrderManagementServices';
 
 
 export default function CustomerManagement() {
@@ -11,13 +12,16 @@ export default function CustomerManagement() {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const totalPages = 4;
+  const [totalPages, setTotalPages] = useState(1);
+  const [data, setData] = useState({totalUser: 0, totalRevenue: 0});
+  const [loadingData, setLoadingData] = useState(false);
 
-  const fetchAllUsers = async()=>{
+  const fetchAllUsers = async(currentPage = 1)=>{
     try {
       setLoading(true);
-      const response = await CustomerServices.getAllUsers();
+      const response = await CustomerServices.getAllUserOrderProducts(currentPage);
       setAllUsers(response?.data?.data);
+      setTotalPages(response?.data?.totalPage);
       console.log("Get All Users resp:", response);
     } catch (error) {
       console.error(error);
@@ -27,13 +31,39 @@ export default function CustomerManagement() {
   }
 
     useEffect(()=>{
-      fetchAllUsers();
-    },[])
+      console.log("Page hit:", page);
+      fetchAllUsers(page);
+    },[page])
 
       const formatStatus = (status?: string) => {
       if (!status) return "";
       return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
     };
+
+
+    const fetchData = async()=>{
+      try {
+        setLoadingData(true);
+        const [totalUserResp, totalRevenueResp] = await Promise.all([
+          CustomerServices.getTotalUserCount(),
+          OrderManagementServices.toatlSales(),
+        ])
+        setData({
+          totalUser: totalUserResp?.data?.data,
+          totalRevenue: totalRevenueResp?.data?.totalPrice,
+        })
+        console.log("Total user resp:", totalUserResp);
+        console.log("Total revenue resp:", totalRevenueResp);
+      } catch (error) {
+        console.error(error);
+      }finally{
+        setLoadingData(false);
+      }
+    }
+
+    useEffect(()=>{
+      fetchData();
+    },[]);
 
     const formatDate = (date?: string) => {
       if (!date) return "";
@@ -81,7 +111,14 @@ export default function CustomerManagement() {
           key={item.id}
           >
             <span className='text-[10px] text-[#001409] font-medium'>{item.label}</span>
-            <span className='text-[15px] font-bold text-[#023337]'>{item.data}</span>
+            <span className='text-[15px] font-bold text-[#023337]'>
+              {loadingData ? 'Loading...' : (
+                item.id == 1 ? `${data.totalUser}` || 0 : 
+                item.id == 2 ? `${data.totalRevenue}` || 0 :
+                item.id == 3 ? `${data.totalRevenue}` || 0 :
+                item.id == 4 ? `${data.totalRevenue}` || 0 : 0
+              )}
+            </span>
             {/* <span className='text-[15px] font-bold text-[#023337]'>{orderStats[item.key]}</span> */}
 
           </div>
@@ -116,8 +153,8 @@ export default function CustomerManagement() {
                   </div>
                   
                 </td>
-                <td className='py-1 pl-[11px]'>{user?.user}</td>
-                <td className='py-1 pl-[11px]'>₹{user?.totalAmount}</td>
+                <td className='py-1 pl-[11px]'>{user?.totalOrders}</td>
+                <td className='py-1 pl-[11px]'>₹{user?.totalAmountSpend}</td>
                 <td className='py-1 pl-[11px]'>
                   <div className="flex items-center gap-2">
                     <span
@@ -130,15 +167,15 @@ export default function CustomerManagement() {
                     </span>
                   </div>
                 </td>
-                <td className='py-1 pl-[11px]'>{formatDate(user?.createdAt)}</td>
+                <td className='py-1 pl-[11px]'>{formatDate(user?.joined)}</td>
               </tr>
             ))}
           </tbody>
         </table>
         <div className='w-full flex  justify-center items-center'>
             <PaginationBtn
-            page={1}
-            totalPages={4}
+            page={page}
+            totalPages={totalPages}
             onPrev={() => setPage(prev => Math.max(prev - 1, 1))}
             onNext={() => setPage(prev => Math.min(prev + 1, totalPages))}
           />

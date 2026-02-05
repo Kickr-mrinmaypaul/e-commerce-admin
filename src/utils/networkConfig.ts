@@ -14,7 +14,8 @@ export const API_ENDPINTS = {
         getAllOrdersbyUser: "/admin/user/count-buyProducts",
         pendingOrders: "/admin/user/totalOrder-pending",
         canceledOrders: "/admin/user/totalOrder-cancelled",
-        completeOrder: "/admin/user/total-order"
+        completeOrder: "/admin/user/total-order",
+        completeDelivery: "/admin/notification/purchased-all",
     },
     product:{
         products: "/admin/product/all",    // get all products
@@ -24,9 +25,13 @@ export const API_ENDPINTS = {
         getTotalCategory: "/admin/category/total",
         addProduct: "/admin/product/add",
         editCategories: "/admin/category/edit-category",
+        deleteCategories: "/admin/category/delete",
+
     },
     customer:{
-        users: "/admin/user/all"    // get all users
+        users: "/admin/user/all",    // get all users
+        userOrderProducts: "/admin/user/count-money-order",
+        countTotalUser: "/admin/user/count-user"
     }
 
 }

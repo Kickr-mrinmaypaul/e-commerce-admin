@@ -24,6 +24,14 @@ export default function OrderManagement() {
   const [loadingToalSales, setLoadingTotalSales] = useState(false);
   const [activeStatus, setActiveStatus] = useState<string>("all");
 
+  const statusColor: Record<string, string> = {
+  DELIVERED: "bg-green-500",
+  SHIPPED: "bg-yellow-500",
+  PENDING: "bg-blue-500",
+  PROCESSING: "bg-purple-500",
+  CANCELED: "bg-red-500",
+};
+
   const orders = [
   { "id": 1, "label": "Order" },
   { "id": 2, "label": "Customer" },
@@ -42,6 +50,35 @@ export default function OrderManagement() {
   { id: 5, label: "Completed", key: "completed" },
 ];
 
+
+  const normalizeOrders = (orders: any[]) => {
+  return orders.map((o) => ({
+    id: o._id || o.id,
+
+    orderId: o.orderId || o.transactionId || "-",
+
+    customer:
+      o.user?.email ||
+      o.userEmail ||
+      o.customerEmail ||
+      "-",
+
+    type:
+      o.paymentMethod ||
+      o.paymentStatus ||
+      "-",
+
+    items: o.items?.length || 0,
+
+    amount: o.totalAmount || o.amount || 0,
+
+    status: o.orderStatus || o.status || "-",
+
+    date: o.createdAt || o.purchasedAt || o.date,
+  }));
+};
+
+
   const fetchOrdersByStatus = async(status: string, currentPage = 1) =>{
     try {
       setLoading(true);
@@ -54,16 +91,31 @@ export default function OrderManagement() {
         case "pending":
           response = await ProductServices.getPendingProducts(currentPage);
           break;
+        case "completed":
+          response = await OrderManagementServices.getCompleteOrderDelivery(currentPage);
+          break;
 
         default:
         response = await OrderManagementServices.getAllOrders(currentPage);
         break;
 
       }
+
+       const rawOrders =
+      response?.data?.transactions ||
+      response?.data?.data ||
+      [];
+
+      const formatted = normalizeOrders(rawOrders);
+
       console.log("Status change data:", response);
-      setAllOrders(response?.data?.transactions || response?.data?.data);
+      // setAllOrders(response?.data?.transactions || response?.data?.data);
+      // setTotalPages(response?.data?.totalPage || 1);
+      // setPage(response?.data?.page || currentPage);
+      setAllOrders(formatted);
       setTotalPages(response?.data?.totalPage || 1);
       setPage(response?.data?.page || currentPage);
+
       
     } catch (error) {
       console.error(error);
@@ -226,15 +278,33 @@ export default function OrderManagement() {
             {allOrders.map((order)=>(
               <tr
               className='shadow-sm text-[13px] font-medium text-[#000000] '
-              key={order?._id}
+              key={order?.id}
               >
                 <td className='py-1 pl-[11px]'>{order?.orderId }</td>
-                <td className='py-1 pl-[11px]'>{order?.user || order?.userEmail}</td>
-                <td className='py-1 pl-[11px]'>{order?.paymentMethod || order?.paymentStatus}</td>
-                <td className='py-1 pl-[11px] text-[#00000061]'>{order?.items?.length} items</td>
-                <td className='py-1 pl-[11px]'>₹{order?.totalAmount}</td>
-                <td className='py-1 pl-[11px]'>{formatStatus(order?.orderStatus)}</td>
-                <td className='py-1 pl-[11px]'>{formatDate(order?.createdAt)}</td>
+                <td className='py-1 pl-[11px]'>{order?.customer}</td>
+                <td className='py-1 pl-[11px]'>{order?.type}</td>
+                <td className='py-1 pl-[11px] text-[#00000061]'>{order.items} items</td>
+                <td className='py-1 pl-[11px]'>₹{order?.amount}</td>
+                <td className='py-1 pl-[11px]'>
+                  <div className="flex items-center gap-2">
+                    {/* <span
+                      className={`inline-block h-1 w-1 rounded-full ${
+                        order?.status === "DELIVERED"
+                          ? "bg-green-500"
+                          : order?.status === "SHIPPED"
+                          ? "bg-yellow-500"
+                          : "bg-blue-500"
+                      }`}
+                    /> */}
+                    <span
+                      className={`inline-block h-1 w-1 rounded-full ${
+                        statusColor[order?.status] || "bg-gray-400"
+                      }`}
+                    />
+                    <span>{formatStatus(order?.status)}</span>
+                  </div>
+                </td>
+                <td className='py-1 pl-[11px]'>{formatDate(order.date)}</td>
               </tr>
             ))}
           </tbody>

@@ -30,9 +30,9 @@ export default function Dashboard() {
     const [stats, setStats] = useState<DashboardStats>({totalSales: 0, totalOrders: 0, pending: 0, canceled: 0});
     const [pastData, setPastData] = useState<DashboardStats>({totalSales: 0, totalOrders: 0, pending: 0, canceled: 0});
     const [loadingBestSelling, setLoadingBestSelling] = useState(false);
-    const [bestSelling, setBestSelling] = useState([])
+    const [bestSelling, setBestSelling] = useState<any[]>([])
     const[loadingCategories, setLoadingCategories] = useState(false);
-    const[categories, setCategories] = useState([]);
+    const[categories, setCategories] = useState<any[]>([]);
     const [allProducts, setAllProducts] = useState<any[]>([]);
     const [loadingProducts, setLoadingProducts] = useState(false);
 
@@ -107,7 +107,7 @@ export default function Dashboard() {
 const bestSellingProductLebel = [
     {id: 1, title: "PRODUCT"},
     {id: 2, title: "TOTAL ORDER"},
-    {id: 3, title: "STATUS"},
+    {id: 3, title: "STOCK"},
     {id: 4, title: "PRICE"},
 ]
 
@@ -502,8 +502,8 @@ const bestSellingData = [
                                         </td>
                                         <td>{item?.totalSold}</td>
                                         <td
-                                        className={item.status === "Stock" ? "text-green-500" : "text-red-500"}
-                                        ><li>{item.status}</li></td>
+                                        // className={item.status === "Stock" ? "text-green-500" : "text-red-500"}
+                                        >{item.stock}</td>
                                         <td>₹{item.finalPrice}</td>
                                     </tr>
                                 ))}
