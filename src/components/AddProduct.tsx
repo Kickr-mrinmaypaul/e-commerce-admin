@@ -100,9 +100,10 @@ export default function AddProduct() {
         try {
             setLoadingAddProduct(true);
             const response = await ProductServices.addProduct(formData);
-            if(response?.data?.data?.success){
+            if(response?.data?.success){
                 toast.success("Product Added Successfully.");
                 reset();
+                setValue("category", "");
             }
             console.log("add product form resp:", response);
         } catch (error) {

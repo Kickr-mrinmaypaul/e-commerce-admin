@@ -10,11 +10,11 @@ const ProductServices = {
     getPendingProducts: (page: number)=> api.get(`${API_ENDPINTS.product.pendingProductsList}?page=${page}`), 
     getTotalCategory: ()=> api.get(API_ENDPINTS.product.getTotalCategory),
     addProduct: (data: FormData)=> api.post(API_ENDPINTS.product.addProduct, data),
-    editCategories: (id: string)=> api.put(`${API_ENDPINTS.product.editCategories}/${id}`),
+    editCategories: (id: string, data: FormData)=> api.put(`${API_ENDPINTS.product.editCategories}/${id}`, data),
     deleteCategories: (id: string) => api.delete(`${API_ENDPINTS.product.deleteCategories}/${id}`),
     searchProducts: (search: string)=> api.get(`${API_ENDPINTS.product.products}?search=${search}`),
     getCategoryById: (id: string)=> api.get(`${API_ENDPINTS.product.categories}/${id}`),
-    editCategory: ()=> api.post(``),
+    //editCategory: (id: string, data: FormData)=> api.put(`${API_ENDPINTS.product.categories}/${id}`, data),
 }
 
 export default ProductServices;

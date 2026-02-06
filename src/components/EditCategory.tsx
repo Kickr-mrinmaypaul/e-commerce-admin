@@ -18,13 +18,16 @@ export interface FormType {
 }
 
 export default function EditCategory() {
-    const {register, handleSubmit, formState: {errors}, setValue} = useForm<FormType>();
+    const {register, handleSubmit, formState: {errors}, setValue, watch} = useForm<FormType>();
     const [loading, setLoading] = useState(false);
     const [fetchingData, setFetchingData] = useState(true);
     const [existingImage, setExistingImage] = useState<string>('');
+    const [imagePreview, setImagePreview] = useState<string>(''); 
     const router = useRouter();
     const params = useParams<{ id: string }>()
     const categoryId = params.id; // Get category ID from URL
+    
+    const categoryImageFile = watch('categoryImage');
 
     // Fetch existing category data
     useEffect(() => {
@@ -32,15 +35,19 @@ export default function EditCategory() {
             try {
                 setFetchingData(true);
                 const response = await ProductServices.getCategoryById(categoryId);
-                
-                if (response?.data?.success) {
-                    const category = response.data.category;
-                    // Pre-fill form fields
-                    setValue('categoryName', category.name);
-                    setValue('subCategory', category.subName);
-                    setValue('description', category.description);
-                    setExistingImage(category.categoryImage); // Store existing image URL
+                console.log("Fetch category by id resp:", response);
+                if (response?.status === 200) {
+                    const category = response?.data?.data;
+
+                    if (category) {
+                    setValue('categoryName', category.name || "");
+                    setValue('subCategory', category.subName || "");
+                    setValue('description', category.description || "");
+                    setExistingImage(category.categoryImage || "");
+                    }
+
                 }
+                
             } catch (error) {
                 console.error(error);
                 toast.error("Failed to fetch category data");
@@ -53,6 +60,21 @@ export default function EditCategory() {
             fetchCategoryData();
         }
     }, [categoryId, setValue]);
+
+        useEffect(() => {
+            if (categoryImageFile && categoryImageFile.length > 0) {
+                const file = categoryImageFile[0];
+                const reader = new FileReader();
+                
+                reader.onloadend = () => {
+                    setImagePreview(reader.result as string);
+                };
+                
+                reader.readAsDataURL(file);
+            } else {
+                setImagePreview('');
+            }
+        }, [categoryImageFile]);
 
     const onSubmit = async(data: FormType) => {
         if(!data) return;
@@ -69,7 +91,7 @@ export default function EditCategory() {
                 formData.append("categoryImage", data.categoryImage[0]);
             }
             
-            const response = await ProductServices.updateCategory(categoryId, formData);
+            const response = await ProductServices.editCategories(categoryId, formData);
             if(response?.data?.success){
                 toast.success("Category updated successfully");
                 router.push('/categories')
@@ -139,19 +161,39 @@ export default function EditCategory() {
                                 <Label htmlFor='categoryImage' className='text-[15px] text-[#000000] font-bold mb-2'>Category Image</Label>
                                 
                                 {/* Show existing image */}
-                                {existingImage && (
+                                {/* {existingImage && (
                                     <div className='mb-2'>
                                         <img src={existingImage} alt="Category" className='w-[153px] h-[168px] object-cover' />
                                         <p className='text-xs text-gray-500 mt-1'>Current Image</p>
                                     </div>
-                                )}
+                                )} */}
+
+                                <div className='mb-2  border border-gray-300 rounded-sm'>
+                                    <img 
+                                        src={imagePreview || existingImage} 
+                                        alt="Category" 
+                                        className='w-[153px] h-[168px] object-contain ' 
+                                    />
+                                    <p className='text-xs text-gray-500 mt-1 text-center'>
+                                        {imagePreview ? 'New Image (Preview)' : 'Current Image'}
+                                    </p>
+                                </div>
+
                                 
-                                <Input
+                                {/* <Input
                                     id='categoryImage'
                                     className='bg-[#F3F5F7] w-[153px]'
                                     type='file'
                                     {...register("categoryImage")}
+                                /> */}
+                                <Input
+                                    id='categoryImage'
+                                    className='bg-[#F3F5F7] w-[153px] cursor-pointer'
+                                    type='file'
+                                    accept="image/*"  // ← ADD THIS LINE
+                                    {...register("categoryImage")}
                                 />
+
                                 <p className='text-xs text-gray-500 mt-1'>Upload new image (optional)</p>
                                 {errors?.categoryImage && (<p className='text-xs text-red-500'>{errors?.categoryImage?.message}</p>)}
 
