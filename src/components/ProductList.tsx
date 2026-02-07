@@ -49,14 +49,21 @@ export default function ProductList() {
 
 
     useEffect(()=>{
+      const trimmed = debouncedQuey?.trim();
+
+      if (!trimmed || trimmed.length < 2) {
+        fetchAllProducts(page);
+        return;
+      }
+
       if (!debouncedQuey || debouncedQuey.trim().length < 2) {
         setAllProducts([]);
         return;
       }
       const searchProducts = async()=>{
         try {
-          console.log("search query:", debouncedQuey);
-          const response = await ProductServices.searchProducts(debouncedQuey);
+         console.log("search query:", trimmed);
+          const response = await ProductServices.searchProducts(trimmed);
           setAllProducts(response?.data?.data);
           //setTotalPages(response?.data?.totalPage);
           console.log("Search product resp:", response);
@@ -112,7 +119,7 @@ export default function ProductList() {
         </div>
         
         <div className='mt-[19px] flex flex-row gap-4'>
-          <div className='flex flex-row items-center gap-2 bg-[#F9FAFB] px-3 py-0.5 rounded-md'>
+          <div className='flex flex-row items-center gap-2 bg-[#F9FAFB] px-3 py-1 rounded-md'>
               <CiSearch />
               <input
               onChange={(e)=> setQuery(e.target.value)}
@@ -125,7 +132,7 @@ export default function ProductList() {
             >
               <Button
 
-              className='h-[28px] w-[101px] gap-1 items-center rounded-sm text-[12px] text-[#ffffff] bg-[#003BFF] hover:bg-[#1346f0] cursor-pointer'
+              className='h-[32px] w-[108px] gap-1 items-center rounded-sm text-[12px] text-[#ffffff] bg-[#003BFF] hover:bg-[#1346f0] cursor-pointer'
               >   
                 <FaPlus className='p-0.5'/>
                 Add Product
@@ -180,12 +187,14 @@ export default function ProductList() {
           </tbody>
         </table>
         <div className='w-full flex  justify-center items-center'>
+          {debouncedQuey.trim().length < 2 && (
             <PaginationBtn
                 page={page}
                 totalPages={totalPages}
                 onPrev={() => setPage(prev => Math.max(prev - 1, 1))}
                 onNext={() => setPage(prev => Math.min(prev + 1, totalPages))}
             />
+          )}
         </div>
       </div>
     </div>

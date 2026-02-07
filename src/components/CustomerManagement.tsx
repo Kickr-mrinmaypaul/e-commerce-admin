@@ -15,25 +15,27 @@ export default function CustomerManagement() {
   const [totalPages, setTotalPages] = useState(1);
   const [data, setData] = useState({totalUser: 0, totalRevenue: 0});
   const [loadingData, setLoadingData] = useState(false);
+  const [activeStatus, setActiveStatus] = useState("total");
 
-  const fetchAllUsers = async(currentPage = 1)=>{
-    try {
-      setLoading(true);
-      const response = await CustomerServices.getAllUserOrderProducts(currentPage);
-      setAllUsers(response?.data?.data);
-      setTotalPages(response?.data?.totalPage);
-      console.log("Get All Users resp:", response);
-    } catch (error) {
-      console.error(error);
-    }finally{
-      setLoading(false);
-    }
-  }
 
-    useEffect(()=>{
-      console.log("Page hit:", page);
-      fetchAllUsers(page);
-    },[page])
+  // const fetchAllUsers = async(currentPage = 1)=>{
+  //   try {
+  //     setLoading(true);
+  //     const response = await CustomerServices.getAllUserOrderProducts(currentPage);
+  //     setAllUsers(response?.data?.data);
+  //     setTotalPages(response?.data?.totalPage);
+  //     console.log("Get All Users resp:", response);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }finally{
+  //     setLoading(false);
+  //   }
+  // }
+
+  //   useEffect(()=>{
+  //     console.log("Page hit:", page);
+  //     fetchAllUsers(page);
+  //   },[page])
 
       const formatStatus = (status?: string) => {
       if (!status) return "";
@@ -65,6 +67,71 @@ export default function CustomerManagement() {
       fetchData();
     },[]);
 
+
+    const normalizeOrders = (orders: any[]) => {
+      return orders.map(o => ({
+        id: o._id || o.id,
+        orderId: o.orderId || "-",
+        name: o.name,
+        email: o.email,
+        orders: o.totalOrders,
+        moneySpend: o.totalAmountSpend,
+        isActive: o.isActive ?? false,
+        joined: o.createdAt || o.joined,
+      }));
+    };
+
+
+      const fetchCustomerByStatus = async(status: string, currentPage = 1) =>{
+        try {
+          setLoading(true);
+          let response;
+
+          switch(status){
+            case "total":
+              response = await CustomerServices.getAllUserOrderProducts(currentPage);
+              break;
+
+            case "active":
+              response = await CustomerServices.getAllUserPurchaedProducts(currentPage);
+              break;
+
+            case "revenue":
+              response = await CustomerServices.getAllUserPurchaedProducts(currentPage);
+              break;
+
+            case "avg":
+              response = await CustomerServices.getAllUserPurchaedProducts(currentPage);
+              break;
+          }
+
+
+          const rawOrders =
+          response?.data?.transactions ||
+          response?.data?.data ||
+          [];
+
+          const formatted = normalizeOrders(rawOrders);
+
+          console.log("Status change data:", response);
+          
+          setAllUsers(formatted);
+          // setTotalPages(response?.data?.totalPage || 1);
+          setTotalPages(response?.data?.totalPage);
+          console.log("Get All Users resp:", response);
+          setPage(response?.data?.page || currentPage);
+
+        } catch (error) {
+          console.error(error);
+        }finally{
+          setLoading(false);
+      }
+    }
+
+  useEffect(() => {
+  fetchCustomerByStatus(activeStatus, page);
+}, [activeStatus, page]);
+
     const formatDate = (date?: string) => {
       if (!date) return "";
       return new Date(date).toLocaleDateString("en-IN", {
@@ -80,14 +147,15 @@ export default function CustomerManagement() {
   { "id": 3, "label": "TOTAL SPENT" },
   { "id": 4, "label": "STATUS" },
   { "id": 5, "label": "JOINED" },
-]
+  ]
 
   const DataLabel = [
-    { "id": 1, "label": "Total Costumers" , "data": "50000"},
-    { "id": 2, "label": "Active costumers" , "data": "50000"},
-    { "id": 3, "label": "Total Revenue", "data": "50000" },
-    { "id": 4, "label": "Avg Order Value" , "data": "50000"},
-  ]
+    { id:1, key:"total", label:"Total Costumers" },
+    { id:2, key:"active", label:"Active costumers" },
+    { id:3, key:"revenue", label:"Total Revenue" },
+    { id:4, key:"avg", label:"Avg Order Value" },
+  ];
+
 
   
 
@@ -106,11 +174,15 @@ export default function CustomerManagement() {
       <div className='flex flex-row justify-between mt-[14px]'>
         {DataLabel.map((item)=>(
           <div
-          onClick={()=> setIsActive(item.label)}
-          className={`flex flex-col pl-[5px] pr-[156px] pt-[5px] pb-[10px]  items-start space-y-3 rounded-sm cursor-pointer ${isActive == item.label? 'bg-[#EAF8E7]' : 'bg-[#ffffff]'}`}
+          onClick={() => {
+            setActiveStatus(item.key);
+            setIsActive(item.label);
+          }}
+         
+          className={`flex flex-col pl-[10px] pr-[156px] pt-[5px] pb-[10px]  items-start space-y-3 rounded-sm cursor-pointer ${isActive == item.label? 'bg-[#EAF8E7]' : 'bg-[#ffffff]'}`}
           key={item.id}
           >
-            <span className='text-[10px] text-[#001409] font-medium'>{item.label}</span>
+            <span className='text-[15px] text-[#001409] font-medium'>{item.label}</span>
             <span className='text-[15px] font-bold text-[#023337]'>
               {loadingData ? 'Loading...' : (
                 item.id == 1 ? `${data.totalUser}` || 0 : 
@@ -144,7 +216,7 @@ export default function CustomerManagement() {
             {allUsers.map((user)=>(
               <tr
               className='text-[13px] font-medium text-[#000000] '
-              key={user?._id}
+              key={user?.id}
               >
                 <td className='py-1 pl-[11px]'>
                   <div className='flex flex-col gap-1'>
@@ -153,8 +225,8 @@ export default function CustomerManagement() {
                   </div>
                   
                 </td>
-                <td className='py-1 pl-[11px]'>{user?.totalOrders}</td>
-                <td className='py-1 pl-[11px]'>₹{user?.totalAmountSpend}</td>
+                <td className='py-1 pl-[11px]'>{user?.orders}</td>
+                <td className='py-1 pl-[11px]'>₹{user?.moneySpend}</td>
                 <td className='py-1 pl-[11px]'>
                   <div className="flex items-center gap-2">
                     <span

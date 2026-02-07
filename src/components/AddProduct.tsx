@@ -396,16 +396,18 @@ export default function AddProduct() {
                 <div className='w-full flex flex-row justify-end space-x-2 mt-2'>
                     <Button
                     type="submit"
-                    className='flex bg-[#003BFF] hover:bg-[#003BFF] cursor-pointer text-[10px] text-[#ffffff] h-[18px] w-[164px] rounded-none'
+                    disabled={loadingAddProduct}
+                    className='flex bg-[#003BFF] hover:bg-[#003BFF] cursor-pointer text-[12px] text-[#ffffff] h-[20px] w-[164px] rounded-none'
                     >
                         {loadingAddProduct ? (<Loader2 className="animate-spin h-4 text-blue-500"/>) : ("Submit") }
                     </Button>
 
                     <Button
                     onClick={()=> router.push('/')}
+                    disabled={loadingAddProduct}
                     type='button'
                     variant="outline"
-                    className='flex bg-[#ffffff] text-[10px] text-[#000000] border border-[#000000] h-[18px] w-[164px] rounded-none'
+                    className='flex bg-[#ffffff] cursor-pointer text-[12px] text-[#000000] border border-[#000000] h-[20px] w-[164px] rounded-none'
                     >
                         Cancel
                     </Button>

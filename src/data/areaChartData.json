@@ -1,0 +1,9 @@
+[
+  { "day": "Mon", "currentWeek": 1200, "lastWeek": 900 },
+  { "day": "Tue", "currentWeek": 2100, "lastWeek": 1600 },
+  { "day": "Wed", "currentWeek": 800,  "lastWeek": 1200 },
+  { "day": "Thu", "currentWeek": 1600, "lastWeek": 1400 },
+  { "day": "Fri", "currentWeek": 2400, "lastWeek": 2000 },
+  { "day": "Sat", "currentWeek": 1900, "lastWeek": 1700 },
+  { "day": "Sun", "currentWeek": 2600, "lastWeek": 2200 }
+]

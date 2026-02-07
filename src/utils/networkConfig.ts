@@ -16,6 +16,8 @@ export const API_ENDPINTS = {
         canceledOrders: "/admin/user/totalOrder-cancelled",
         completeOrder: "/admin/user/total-order",
         completeDelivery: "/admin/notification/purchased-all",
+        canceledOrderList: "admin/notification/cancel-order",
+        areaChart: "/admin/user/order-graph",
     },
     product:{
         products: "/admin/product/all",    // get all products
@@ -30,7 +32,8 @@ export const API_ENDPINTS = {
     },
     customer:{
         users: "/admin/user/all",    // get all users
-        userOrderProducts: "/admin/user/count-money-order",
+        userPurchasedProducts: "/admin/user/count-money-order",
+        userOrderProducts: "/admin/user/money-spend",
         countTotalUser: "/admin/user/count-user"
     }
 

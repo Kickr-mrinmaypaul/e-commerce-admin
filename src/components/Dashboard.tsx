@@ -12,7 +12,7 @@ import OrderManagementServices from '@/services/OrderManagementServices';
 import { Loader2 } from 'lucide-react';
 import ProductServices from '@/services/ProductServices';
 import { useRouter } from 'next/navigation';
-
+import data from '@/data/areaChartData.json'
 
 
 type DashboardStats = {
@@ -25,6 +25,7 @@ type DashboardStats = {
 export default function Dashboard() {
     const [isActive, setIsActive] = useState("This week");
     const [transactionData, setTransactionData] = useState<any[]>([]);
+    const [transactionFilters, setTransactionFilters] = useState<string>("pending");
     const [loading, setLoading] = useState(false);
     const [loadingToalSales, setLoadingTotalSales] = useState(false);
     const [stats, setStats] = useState<DashboardStats>({totalSales: 0, totalOrders: 0, pending: 0, canceled: 0});
@@ -35,6 +36,11 @@ export default function Dashboard() {
     const[categories, setCategories] = useState<any[]>([]);
     const [allProducts, setAllProducts] = useState<any[]>([]);
     const [loadingProducts, setLoadingProducts] = useState(false);
+    const [areaChartData, setAreaChartData] = useState<any[]>({thisWeek: [], currentWeek:[]});
+    const [loadingAreaChart, setLoadingAreaChart] = useState(false);
+    const [areaChartFilter, setAreaChartFilter] =  useState<string>("currentWeek");
+    
+    
 
     const router = useRouter();
     
@@ -46,23 +52,8 @@ export default function Dashboard() {
     ] 
 
     const btn = [
-        {id: 1, title: "This week"},
-        {id: 2, title: "Last week"}
-    ]
-
-    const chartLabel = [
-        {id: 1, title: "Customer"},
-        {id: 2, title: "Total Products"},
-        {id: 3, title: "Stock Products"},
-        {id: 4, title: "Out of Stock"},
-        {id: 5, title: "Revenue"},
-    ]
-
-    const topProducts = [
-        {id: 1, imgurl: "/globe.svg", title: "test1", amount: "15000"},
-        {id: 2, imgurl: "/globe.svg", title: "test2", amount: "15000"},
-        {id: 3, imgurl: "/globe.svg", title: "test3", amount: "15000"},
-        {id: 4, imgurl: "/globe.svg", title: "test4", amount: "15000"},
+        {id: 1, title: "This week", value: "currentWeek"},
+        {id: 2, title: "Last week", value: "lastWeek"}
     ]
 
     const transactionLabel = [
@@ -72,37 +63,6 @@ export default function Dashboard() {
         {id: 4,  title: "Status"},
         {id: 5,  title: "Amount"},
     ]
-    
-    const ordersData = [
-  {
-    id: "ORD-1001",
-    customer: "Rahul Sharma",
-    orderDate: "2025-01-12",
-    status: "Completed",
-    amount: "₹2,499",
-  },
-  {
-    id: "ORD-1002",
-    customer: "Ananya Verma",
-    orderDate: "2025-01-13",
-    status: "Pending",
-    amount: "₹1,299",
-  },
-  {
-    id: "ORD-1003",
-    customer: "Amit Patel",
-    orderDate: "2025-01-14",
-    status: "Cancelled",
-    amount: "₹3,799",
-  },
-  {
-    id: "ORD-1004",
-    customer: "Sneha Gupta",
-    orderDate: "2025-01-15",
-    status: "Processing",
-    amount: "₹899",
-  },
-];
 
 const bestSellingProductLebel = [
     {id: 1, title: "PRODUCT"},
@@ -111,20 +71,36 @@ const bestSellingProductLebel = [
     {id: 4, title: "PRICE"},
 ]
 
-const bestSellingData = [
-    {id: 1, imgUrl: "/globe.svg", totalOrder: "101", status: "Stock", price: "12000"},
-    {id: 2, imgUrl: "/globe.svg", totalOrder: "189", status: "Out of Stock", price: "12000"},
-    {id: 3, imgUrl: "/globe.svg", totalOrder: "111", status: "Stock", price: "12000"},
-    {id: 4, imgUrl: "/globe.svg", totalOrder: "131", status: "Stock", price: "12000"},
-]
+const transactionFilterLabel = [
+  { label: "Completed", value: "completed" },
+  { label: "Pending", value: "pending" },
+  { label: "Cancelled", value: "cancelled" },
+];
 
-    const fetchTransaction = async()=>{
+
+    const fetchAreaChart = async()=> {
+        try {
+            setLoadingAreaChart(true);
+            const response = await OrderManagementServices.areaChartGraph();
+            console.log("AreaChart Data resp: ",response);
+        } catch (error) {
+            console.error(error);
+        }finally{
+            setLoadingAreaChart(false);
+        }
+    }
+
+    useEffect(()=>{
+        fetchAreaChart();
+    },[])
+
+    const fetchTransaction = async(filter?: string | null)=>{
         try {
             setLoading(true);
-            const response = await OrderManagementServices.getAllOrders(1);
+            const response = await OrderManagementServices.getFilteredTransaction(filter);
             const transactions = response?.data?.transactions || [];
             console.log("Dahboard transaction data:", response);
-            setTransactionData(transactions.slice(0, 4));
+            setTransactionData(transactions.slice(0, 5));
         } catch (error) {
             console.error(error);
         }finally{
@@ -132,9 +108,9 @@ const bestSellingData = [
         }
     }
 
-    useEffect(()=>{
-        fetchTransaction();
-    },[])
+    useEffect(() => {
+    fetchTransaction(transactionFilters);
+    }, [transactionFilters]);
 
     const fetchDahboardData = async()=>{
         try {
@@ -256,7 +232,7 @@ const bestSellingData = [
                         <div className='flex flex-row items-center justify-between mb-[29px]'>
                             <div>
                                 <span className='text-[#23272E] text-[15px] font-bold'>{item.title}</span>
-                                <p className='text-[#6A717F] text-[10px]'>{item.days}</p>
+                                <p className='text-[#6A717F] text-[12px] font-semibold'>{item.days}</p>
                             </div>
                             <span className='h-[18px] text-[#6A717F] cursor-pointer'><HiDotsVertical /></span>
                         </div>
@@ -266,7 +242,7 @@ const bestSellingData = [
                                 (item.id === 1 ? `₹${stats.totalSales}` :
                                 item.id === 2 ? `${stats.totalOrders}` :
                                 0)}</span>
-                                <span className='text-[10px] text-[#6A717F] flex flex-row gap-2'>Previous 7 days <p className='text-[#003BFF] text-[10px]'>{loadingToalSales ? "Loading..." : 
+                                <span className='text-[12px] font-semibold text-[#6A717F] flex flex-row gap-2 items-center'>Previous 7 days <p className='text-[#003BFF] text-[12px] font-semibold'>{loadingToalSales ? "Loading..." : 
                                 (item.id === 1 ? `₹${pastData.totalSales}` || 0  :
                                 item.id === 2 ? pastData.totalOrders || 0:
                                 0)}</p></span>
@@ -288,22 +264,24 @@ const bestSellingData = [
                         <div className='flex flex-row items-center justify-between mb-[29px]'>
                             <div>
                                 <span className='text-[#23272E] text-[15px] font-bold'>Pending & Canceled</span>
-                                <p className='text-[#6A717F] text-[10px]'>Last 7 days</p>
+                                <p className='text-[#6A717F] text-[12px] font-semibold'>Last 7 days</p>
                             </div>
                             <span className='h-[18px] text-[#6A717F] cursor-pointer'><HiDotsVertical /></span>
                         </div>
                         <div className='flex flex-row items-center gap-[21px]'>
                             <div>
-                                <span className='text-[10px] text-[#6A717F] flex flex-row gap-2'>Pending</span>
+                                <span className='text-[12px] font-semibold text-[#6A717F] flex flex-row gap-2'>Pending</span>
                                 <span className='text-[12px] text-[#023337] font-bold'>{loadingToalSales ? "Loading..." : (stats?.pending || 0)}</span>
                             </div>
                             <div>
-                                <span className='text-[10px] text-[#6A717F] flex flex-row gap-2'>Canceled</span>
+                                <span className='text-[12px] font-semibold text-[#6A717F] flex flex-row gap-2'>Canceled</span>
                                 <span className='text-[12px] text-[#EF4343] font-bold'>{stats?.canceled || 0} </span>
                             </div>
                         </div>
                         <div className='flex justify-end items-center'>
-                            <DetailsButton title='Details'/>
+                            <Link href={'/transaction'}>
+                                <DetailsButton title='Details'/>
+                            </Link>
         
                         </div>
                     </div> 
@@ -318,12 +296,15 @@ const bestSellingData = [
                 <div className='w-[70%] flex flex-col bg-[#ffffff] border-[#00000033] shadow-md py-[18px] px-[9px] rounded-sm'>
                     <div className='flex flex-col'>
                         <div className='flex flex-row items-center justify-between mb-[29px]'>
-                            <span className='text-[14px] text-[#23272E] font-bold'>Report for this week</span>
+                            <span className='text-[14px] text-[#23272E] font-bold'>Report for {isActive}</span>
                             <div className='flex flex-row items-center space-x-2'>
                                 <div className='flex flex-row bg-[#E7E8F8] px-[7px] py-[5px] rounded-md space-x-[8px] text-[12px] '>
                                     {btn.map((item)=>(
                                         <button 
-                                        onClick={()=> setIsActive(item.title)}
+                                        onClick={()=> {
+                                            setIsActive(item.title);
+                                            setAreaChartFilter(item.value )
+                                        }}
                                         className={`cursor-pointer ${isActive == item.title ? "bg-[#ffffff] text-[#003CFF] py-[2px] px-[5px] rounded-md font-medium" : ""}`}
                                         key={item.title}>{item.title}</button>
                                     ))}
@@ -338,7 +319,18 @@ const bestSellingData = [
                         {/* API Data  customer , total product, stock product...*/}
                         </div>
                     </div>
-                    <SimpleAreaChart/>
+                    {/* <SimpleAreaChart/> */}
+                    <SimpleAreaChart
+                        data={data}
+                        xKey="day"
+                        areas={[
+                            {
+                            dataKey: areaChartFilter,
+                            color: "#6366f1",
+                            },
+                        ]}
+                    />
+
                 </div>
                 <div className='w-[30%] flex flex-col py-[9.34px] px-[7.47px] bg-[#ffffff] border-[#00000033] shadow-md rounded-sm'>
                     <div className='flex flex-row justify-between'>
@@ -363,7 +355,7 @@ const bestSellingData = [
                                     className='object-contain w-[36px] h-[50px]'
                                     src={item?.image[0]} 
                                     alt={item?.name} />
-                                    <span className='ml-[7.4px] text-[11px] text-[#023337] font-medium line-clamp-1'>{item?.name}</span>
+                                    <span className='ml-[7.4px] text-[12px] text-[#023337] font-medium line-clamp-1'>{item?.name}</span>
                                     {/* <span className='text-[11px] text-[#8B909A]'>item {item?.productId}</span> */}
                                 </div>
                                 <span>₹{item?.finalPrice}</span>
@@ -378,10 +370,14 @@ const bestSellingData = [
 
         <section className='flex-1 p-4 '>
             <div className='w-full flex flex-row gap-[26px]'>
-                <div className='w-[70%] h-[261px] px-[9px] py-[11px] bg-[#FFFFFF] border-[#00000033] rounded-sm shadow-md'>
+                <div className='w-[70%] h-auto px-[9px] py-[11px] bg-[#FFFFFF] border-[#00000033] rounded-sm shadow-md'>
                     <div className='w-full pr-[22px] flex flex-row items-center justify-between'>
                         <span className='text-[14px] font-bold text[#23272E]'>Transaction</span>
-                        <FilterButton title='Filter'/>
+                        <FilterButton
+                            options={transactionFilterLabel}
+                            value={transactionFilters}
+                            onSelect={setTransactionFilters}
+                        />
                     </div>
                     <div className='w-full'>
                         <table className='w-full border-separate border-spacing-y-3'>
@@ -405,7 +401,20 @@ const bestSellingData = [
                                         <td className='py-0.5 pl-[11px]'>{item._id}</td>
                                         <td className='py-0.5 pl-[11px]'>{item?.user?.email}</td>
                                         <td className='py-0.5 pl-[11px]'>{formatDate(item?.createdAt)}</td>
-                                        <td className='py-0.5 pl-[11px]'>{formatStatus(item?.orderStatus)}</td>
+                                        <td className='py-0.5 pl-[11px]'>
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                className={`h-1 w-1 rounded-full ${
+                                                    item?.paymentStatus === "PAID"
+                                                    ? "bg-green-500"
+                                                    : item?.paymentStatus === "PENDING"
+                                                    ? "bg-yellow-500"
+                                                    : "bg-red-500"
+                                                }`}
+                                                />
+                                                <span>{formatStatus(item?.paymentStatus)}</span>
+                                            </div>
+                                        </td>
                                         <td className='py-0.5 pl-[11px]'>₹{item?.totalAmount}</td>
                                     </tr>
                                 ))}
@@ -435,19 +444,19 @@ const bestSellingData = [
                         type="text" />
                     </div>
                     <div className='flex flex-col mt-[7.47px]'>
-                        {topProducts.map((item)=>(
+                        {bestSelling.map((item)=>(
                             <div
                             className='flex flex-row items-center justify-between'
-                            key={item.id}
+                            key={item.productId}
                             >
                                 <div className='w-[135px] h-[53.74px] flex flex-row items-center border-b border-[#D1D1D1]'>
                                     <img 
                                     className='object-contain w-[36px] h-[50px]'
-                                    src={item.imgurl} 
-                                    alt={item.title} />
-                                    <span className='ml-[7.4px]'>{item.title}</span>
+                                    src={item.image[0]} 
+                                    alt={item.name} />
+                                    <span className='ml-[7.4px] text-[12px] text-[#023337] font-medium line-clamp-1'>{item.name}</span>
                                 </div>
-                                <span>₹{item.amount}</span>
+                                <span>₹{item.finalPrice}</span>
                             </div>
                         ))}
                     </div>
@@ -468,7 +477,11 @@ const bestSellingData = [
                     )}
                     <div className='w-full flex flex-row items-center justify-between pt-[8px] pr-[9px]'>
                         <span className='text-[14px] font-bold text[#23272E]'>Best Selling Products</span>
-                        <FilterButton title='Filter'/>
+                        <FilterButton 
+                            options={transactionFilterLabel}
+                            onSelect={() => {
+                                ;
+                        }}/>
                     </div>
                     <div className='w-full mt-[16px]'>
                         <table className='w-full border-collapse'>

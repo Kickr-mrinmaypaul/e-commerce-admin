@@ -5,6 +5,7 @@ import OrderManagementServices from '@/services/OrderManagementServices';
 import { Loader2 } from 'lucide-react';
 import PaginationBtn from './button/PaginationBtn';
 import { CiSearch } from 'react-icons/ci';
+import FilterButton from './button/FilterButton';
 
 export default function Transaction() {
   const [isActive, setIsActive] = useState("All Order");
@@ -12,26 +13,55 @@ export default function Transaction() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [transactionData, setTransactionData] = useState<any[]>([]);
+  const [transactionFilters, setTransactionFilters] = useState<string>('');
 
-  const fetchAllOrders = async(currentPage = 1)=>{
-    try {
-      setLoading(true);
-      const response = await OrderManagementServices.getAllOrders(currentPage);
-      setAllOrders(response?.data?.transactions);
-      setTotalPages(response?.data?.totalPage);
-      // setPage(response?.data?.page);
-      console.log("Get All Orders resp:", response);
-    } catch (error) {
-      console.error(error);
-    }finally{
-      setLoading(false);
-    }
-  }
+  const transactionFilterLabel = [
+  { label: "Completed", value: "paid" },
+  { label: "Pending", value: "pending" },
+  { label: "Cancelled", value: "cancelled" },
+  { label: "Failed", value: "Failed" },
 
-    
-    useEffect(()=>{
-      fetchAllOrders(page);
-    },[page])
+];
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        let response;
+
+        if (transactionFilters) {
+          response = await OrderManagementServices.getFilteredTransaction(
+            transactionFilters,
+            page
+          );
+          setAllOrders(response?.data?.transactions || []);
+          setTotalPages(response?.data?.totalPage || 1);
+          console.log("Filtered transaction resp:", response);
+        }
+
+        else {
+          response = await OrderManagementServices.getAllOrders(page);
+          setAllOrders(response?.data?.transactions || []);
+          setTotalPages(response?.data?.totalPage || 1);
+          console.log("Total transaction response:", response);
+        }
+
+        console.log("Transactions resp:", response);
+
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+  }, [page, transactionFilters]);
+
 
       const formatStatus = (status?: string) => {
       if (!status) return "";
@@ -72,12 +102,22 @@ export default function Transaction() {
           <span className='text-[13px] text-[#000000] font-bold mt-[5px]'>Transactions</span>
           <p className='text-[11px] text-[#6A717F]'>Track all financial transactions</p>
         </div>
-        <div className='flex flex-row items-center gap-2 bg-[#F9FAFB] px-3 py-0.5 rounded-md'>
-            <CiSearch />
-            <input
-            className='placeholder:text-[14px] outline-none'
-            placeholder='Search Transcation by id...' 
-            type="text" />
+        <div className='flex flex-row items-center gap-2'>
+          <div className='flex flex-row items-center gap-2 bg-[#F9FAFB] px-3 py-0.5 rounded-md'>
+              <CiSearch />
+              <input
+              className='placeholder:text-[14px] outline-none'
+              placeholder='Search Transcation by id...' 
+              type="text" />
+          </div>
+          <FilterButton
+            options={transactionFilterLabel}
+            value={transactionFilters}
+            onSelect={(value)=>{
+              setPage(1);
+              setTransactionFilters(value);
+            }}
+          />
         </div>
       </div>
       <div className='w-full bg-[#ffffff] mt-[13px] p-4 rounded-sm'>
@@ -108,12 +148,14 @@ export default function Transaction() {
                   <div className="flex items-center gap-2">
                     <span
                       className={`h-1 w-1 rounded-full ${
-                        order?.paymentStatus ==="PAID" ? "bg-green-500" : "bg-white" || order?.paymentStatus ==="PENDING" ? "bg-yellow-500" : "bg-red-500"
+                        order?.paymentStatus === "PAID"
+                          ? "bg-green-500"
+                          : order?.paymentStatus === "PENDING"
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
                       }`}
-                    ></span>
-                    <span>
-                      {formatStatus(order?.paymentStatus)}
-                    </span>
+                    />
+                    <span>{formatStatus(order?.paymentStatus)}</span>
                   </div>
                 {/* <li>{formatStatus(order?.paymentStatus)}</li> */}
                 </td>

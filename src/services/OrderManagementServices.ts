@@ -10,8 +10,11 @@ const OrderManagementServices = {
     getAllOrdersData: ()=> api.get(API_ENDPINTS.orderManagement.getAllOrdersbyUser),
     getPendingOrders: ()=> api.get(API_ENDPINTS.orderManagement.pendingOrders),
     getCanceledOrders: ()=> api.get(API_ENDPINTS.orderManagement.canceledOrders),
+    getCanceledOrderList: (page: number)=> api.get(`${API_ENDPINTS.orderManagement.canceledOrderList}?page=${page}`),
     getCompletedOrder: ()=> api.get(API_ENDPINTS.orderManagement.completeOrder),
     getCompleteOrderDelivery: (page: number)=> api.get(`${API_ENDPINTS.orderManagement.completeDelivery}?page=${page}`),
+    areaChartGraph: ()=> api.get(`${API_ENDPINTS.orderManagement.areaChart}`),
+    getFilteredTransaction:(filter: string, page: number)=> api.get(`${API_ENDPINTS.orderManagement.allOrders}?page=${page}&status=${filter}`),
 }
 
 export default OrderManagementServices;

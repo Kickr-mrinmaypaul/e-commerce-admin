@@ -29,24 +29,24 @@ export default function OrderManagement() {
   SHIPPED: "bg-yellow-500",
   PENDING: "bg-blue-500",
   PROCESSING: "bg-purple-500",
-  CANCELED: "bg-red-500",
+  CANCELLED: "bg-red-500",
 };
 
   const orders = [
   { "id": 1, "label": "Order" },
   { "id": 2, "label": "Customer" },
-  {"id": 3, "label": "Type"},
+  {"id": 3, "label": "Payment Status"},
   { "id": 4, "label": "Items" },
   { "id": 5, "label": "Amount" },
-  { "id": 6, "label": "Status" },
+  { "id": 6, "label": "Order Status" },
   { "id": 7, "label": "Date" }
 ]
 
   const DataLabel = [
   { id: 1, label: "All Order", key: "all" },
   { id: 2, label: "Pending", key: "pending" },
-  { id: 3, label: "Processing", key: "processing" },
-  { id: 4, label: "Shipped", key: "shipped" },
+  // { id: 3, label: "Processing", key: "processing" },
+  { id: 4, label: "Canceled", key: "canceled" },
   { id: 5, label: "Completed", key: "completed" },
 ];
 
@@ -68,7 +68,7 @@ export default function OrderManagement() {
       o.paymentStatus ||
       "-",
 
-    items: o.items?.length || 0,
+    items: o.items?.length ||o.quantity || 0,
 
     amount: o.totalAmount || o.amount || 0,
 
@@ -91,6 +91,9 @@ export default function OrderManagement() {
         case "pending":
           response = await ProductServices.getPendingProducts(currentPage);
           break;
+        case "canceled":
+          response = await OrderManagementServices.getCanceledOrderList(currentPage);
+          break;  
         case "completed":
           response = await OrderManagementServices.getCompleteOrderDelivery(currentPage);
           break;
@@ -205,23 +208,6 @@ export default function OrderManagement() {
         fetchDahboardData();
     },[])
 
-    //   const DataLabel = [
-    //   { id: 1, label: "All Orders", key: "all" },
-    //   { id: 2, label: "Pending", key: "pending" },
-    //   { id: 3, label: "Processing", key: "processing" },
-    //   { id: 4, label: "Shipped", key: "shipped" },
-    //   { id: 5, label: "Completed", key: "completed" },
-    // ];
-
-    // const ordersData = allOrders?.data?.transactions || [];
-
-    // const orderStats = {
-    //   all: ordersData.length,
-    //   pending: ordersData.filter(o => o.orderStatus.toLowerCase() === "pending").length,
-    //   processing: ordersData.filter(o => o.orderStatus.toLowerCase() === "processing").length,
-    //   shipped: ordersData.filter(o => o.orderStatus.toLowerCase() === "shipped").length,
-    //   completed: ordersData.filter(o => o.orderStatus.toLowerCase() === "completed").length,
-    // };
 
   if(loading){
     return(
@@ -242,10 +228,10 @@ export default function OrderManagement() {
             setActiveStatus(item.key)
             setPage(1);
           }}
-          className={`flex flex-col pl-[5px] pr-[156px] pt-[5px] pb-[10px]  items-start space-y-3 rounded-sm cursor-pointer ${activeStatus === item.key ? 'bg-[#EAF8E7]' : 'bg-[#ffffff]'}`}
+          className={`flex flex-col pl-[10px] pr-[156px] pt-[5px] pb-[10px]  items-start space-y-3 rounded-sm cursor-pointer ${activeStatus === item.key ? 'bg-[#EAF8E7]' : 'bg-[#ffffff]'}`}
           key={item.id}
           >
-            <span className='text-[10px] text-[#001409] font-medium'>{item.label}</span>
+            <span className='text-[15px] text-[#001409] font-medium'>{item.label}</span>
             <span className='text-[15px] font-bold text-[#023337]'>{loadingToalSales ? "Loading..." : 
               (item.id === 1 ? `${stats?.totalOrders}` :
               item.id === 2 ? `${stats?.pending}` :

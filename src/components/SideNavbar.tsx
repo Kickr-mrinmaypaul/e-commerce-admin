@@ -64,16 +64,16 @@ export default function SideNavbar() {
     // ];
 
     const sideMenuButton = [
-    { id: 1, name: "Dashboard", icon: <GoHome className='h-3'/>, route: "/" },
-    { id: 2, name: "Order Management", icon: <MdOutlineShoppingCart className='h-3'/>, route: "/order-management" },
-    { id: 3, name: "Customers", icon: <UserRound className='h-3'/>, route: "/customers" },
-    { id: 4, name: "Categories", icon: <CopyPlus className='h-3'/>, route: "/categories"},
-    { id: 5, name: "Transactions", icon: <TiCreditCard className='h-3'/>, route: "/transaction" },
+    { id: 1, name: "Dashboard", icon: <GoHome className='h-4'/>, route: "/" },
+    { id: 2, name: "Order Management", icon: <MdOutlineShoppingCart className='h-4'/>, route: "/order-management" },
+    { id: 3, name: "Customers", icon: <UserRound className='h-4'/>, route: "/customers" },
+    { id: 4, name: "Categories", icon: <CopyPlus className='h-4'/>, route: "/categories"},
+    { id: 5, name: "Transactions", icon: <TiCreditCard className='h-4'/>, route: "/transaction" },
     ];
 
     const productItems = [
-    { id: 6, name: "Add Products", icon: <CiCirclePlus className='h-3'/>, route: "/product/add-products"},
-    { id: 7, name: "Product List", icon: <FaCube className='h-3'/>, route: "/product/product-list"},
+    { id: 6, name: "Add Products", icon: <CiCirclePlus className='h-4'/>, route: "/product/add-products"},
+    { id: 7, name: "Product List", icon: <FaCube className='h-4 font-semibold'/>, route: "/product/product-list"},
     {id: 8, name: "Log In", icon: "", route: "/login"}
     ];
 
@@ -85,7 +85,7 @@ export default function SideNavbar() {
 
   return (
 <div className='flex flex-row min-h-screen'>
-    <aside className='w-[165px] bg-[#ffffff] border-r border-[#0000001F]'>
+    <aside className='w-[165px] xl:w-[175px]  bg-[#ffffff] border-r border-[#0000001F]'>
         <nav className='w-full flex flex-col pr-[4px]'>
             <div className='w-[121.45px] h-[41.68px] mt-[6.31px] ml-[5.25px] p-[9.34px] items-center'>
                 <h1 
@@ -96,7 +96,7 @@ export default function SideNavbar() {
                 <span className='text-[14px] text-[#6A717F] pl-[11.21px]'>Main menu</span>
             </div>
             <div className='w-full mt-4'>
-                <ul className='flex flex-col ml-[6px] items-start  text-[14px] text-[#6A717F] space-y-[12.25px]'>
+                <ul className='flex flex-col ml-[6px] items-start  text-[15px] text-[#6A717F] space-y-[12.25px]'>
                     {sideMenuButton.map((menu)=>(
                     <div 
                     key={menu.id}
