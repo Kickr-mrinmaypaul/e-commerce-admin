@@ -18,6 +18,7 @@ import { CopyPlus } from 'lucide-react';
 import { TiCreditCard } from "react-icons/ti";
 import { CiCirclePlus } from "react-icons/ci";
 import { FaCube } from "react-icons/fa6";
+import AddBanner from './AddBanner';
 
 
 export default function SideNavbar() {
@@ -49,6 +50,9 @@ export default function SideNavbar() {
         case "Product List":
         return <ProductList/>;
 
+        case "Add Banner":
+        return <AddBanner/>;
+
         default:
         return <Dashboard />;
     }
@@ -73,6 +77,7 @@ export default function SideNavbar() {
 
     const productItems = [
     { id: 6, name: "Add Products", icon: <CiCirclePlus className='h-4'/>, route: "/product/add-products"},
+    { id: 6, name: "Add Banner", icon: <CiCirclePlus className='h-4'/>, route: "/add-banner"},
     { id: 7, name: "Product List", icon: <FaCube className='h-4 font-semibold'/>, route: "/product/product-list"},
     {id: 8, name: "Log In", icon: "", route: "/login"}
     ];

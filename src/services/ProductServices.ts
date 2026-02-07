@@ -15,6 +15,7 @@ const ProductServices = {
     searchProducts: (search: string)=> api.get(`${API_ENDPINTS.product.products}?search=${search}`),
     getCategoryById: (id: string)=> api.get(`${API_ENDPINTS.product.categories}/${id}`),
     //editCategory: (id: string, data: FormData)=> api.put(`${API_ENDPINTS.product.categories}/${id}`, data),
+    addBanner: (data: FormData)=> api.post(API_ENDPINTS.product.addBanner, data),
 }
 
 export default ProductServices;
